@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Autocomplete,
   TextField,
@@ -55,43 +55,59 @@ export const ArtistAutocomplete: React.FC<ArtistAutocompleteProps> = ({
   const [selectedAuthor, setSelectedAuthor] = useState<ArtistOption | null>(null);
 
   // Función debounced para buscar artistas
-  const debouncedSearch = debounce(async (searchQuery: string) => {
-    if (!searchQuery || searchQuery.length < 2) {
-      setOptions([]);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const results = await authorService.searchAuthorsAutocomplete(searchQuery, 10);
-
-      // Verificar si el texto exacto existe en los resultados
-      const exactMatch = results.find(
-        result => result.authorName.toLowerCase() === searchQuery.toLowerCase()
-      );
-
-      // Si no hay coincidencia exacta, agregar opción para crear nuevo artista
-      const optionsWithAdd: AutocompleteOption[] = [...results];
-      if (!exactMatch && searchQuery.trim()) {
-        optionsWithAdd.push({
-          authorId: 'add-new',
-          authorName: `Agregar "${searchQuery.trim()}"`,
-          isAddButton: true
-        } as AddButtonOption);
+  const debouncedSearch = useMemo(
+    () => debounce(async (searchQuery: string) => {
+      // Solo buscar si hay al menos 3 caracteres
+      if (!searchQuery || searchQuery.length < 3) {
+        setOptions([]);
+        setLoading(false);
+        return;
       }
 
-      setOptions(optionsWithAdd);
-    } catch (error) {
-      console.error('Error al buscar artistas:', error);
-      setOptions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, 300);
+      setLoading(true);
+      try {
+        const results = await authorService.searchAuthorsAutocomplete(searchQuery, 10);
+
+        // Verificar si el texto exacto existe en los resultados
+        const exactMatch = results.find(
+          result => result.authorName.toLowerCase() === searchQuery.toLowerCase()
+        );
+
+        // Si no hay coincidencia exacta, agregar opción para crear nuevo artista
+        const optionsWithAdd: AutocompleteOption[] = [...results];
+        if (!exactMatch && searchQuery.trim().length >= 3) {
+          optionsWithAdd.push({
+            authorId: 'add-new',
+            authorName: `Agregar "${searchQuery.trim()}"`,
+            isAddButton: true
+          } as AddButtonOption);
+        }
+
+        setOptions(optionsWithAdd);
+      } catch (error) {
+        console.error('Error al buscar artistas:', error);
+        setOptions([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 500),
+    []
+  );
 
   // Efecto para buscar cuando cambia el input
   useEffect(() => {
-    debouncedSearch(inputValue);
+    // Cancelar búsqueda anterior si existe
+    debouncedSearch.cancel();
+
+    // Solo iniciar loading si hay al menos 3 caracteres
+    if (inputValue && inputValue.length >= 3) {
+      setLoading(true);
+      debouncedSearch(inputValue);
+    } else {
+      setLoading(false);
+      setOptions([]);
+    }
+
     return () => {
       debouncedSearch.cancel();
     };
@@ -192,7 +208,11 @@ export const ArtistAutocomplete: React.FC<ArtistAutocompleteProps> = ({
       onChange={handleChange}
       loading={loading}
       loadingText="Buscando artistas..."
-      noOptionsText="No se encontraron artistas"
+      noOptionsText={
+        inputValue && inputValue.length < 3
+          ? "Escribe al menos 3 caracteres para buscar"
+          : "No se encontraron artistas"
+      }
       renderInput={(params) => (
         <TextField
           {...params}
@@ -202,14 +222,16 @@ export const ArtistAutocomplete: React.FC<ArtistAutocompleteProps> = ({
           error={error}
           helperText={helperText}
           fullWidth={fullWidth}
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                {params.InputProps.endAdornment}
-              </>
-            ),
+          slotProps={{
+            input: {
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }
           }}
         />
       )}
