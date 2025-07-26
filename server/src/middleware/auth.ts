@@ -2,19 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/database';
 
-// Extender la interfaz Request para incluir user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        userId: number;
-        username: string;
-        email: string;
-        role: string;
-      };
-    }
-  }
-}
+// Los tipos están definidos en src/types/express.d.ts
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shared-melody-secret-key-2024';
 
@@ -144,7 +132,7 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction): v
     return;
   }
 
-  if (req.user.role !== 'admin') {
+  if ((req.user as any).role !== 'admin') {
     res.status(403).json({
       success: false,
       message: 'Permisos de administrador requeridos'
@@ -166,7 +154,7 @@ export const requireOwnerOrAdmin = (userIdField: string = 'userId') => {
 
     const resourceUserId = req.params[userIdField] || req.body[userIdField];
     
-    if (req.user.role === 'admin' || req.user.userId.toString() === resourceUserId) {
+    if ((req.user as any).role === 'admin' || (req.user as any).userId.toString() === resourceUserId) {
       return next();
     }
 

@@ -42,9 +42,10 @@ interface AuthContextType {
   // Utilidades
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
+  setAuthDataFromToken: (token: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -64,7 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [oauthProviders, setOauthProviders] = useState<OAuthProvider[]>([]);
   const [sessions, setSessions] = useState<UserSession[]>([]);
 
-  const isAuthenticated = authUtils.isAuthenticated();
+  const isAuthenticated = !!user && authUtils.isAuthenticated();
 
   useEffect(() => {
     initializeAuth();
@@ -257,6 +258,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return authUtils.hasPermission(user, permission);
   };
 
+  const setAuthDataFromToken = async (token: string): Promise<void> => {
+ try {
+   setLoading(true);
+   authUtils.setAccessToken(token);
+   await initializeAuth();
+ } catch (error) {
+     console.error("Error setting auth data from token:", error);
+     authUtils.clearAuthData();
+   } finally {
+     setLoading(false);
+   }
+  };
+
   const value: AuthContextType = {
     // Estado
     user,
@@ -289,7 +303,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Utilidades
     hasRole,
-    hasPermission
+    hasPermission,
+    setAuthDataFromToken
   };
 
   return (

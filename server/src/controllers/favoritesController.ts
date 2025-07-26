@@ -5,7 +5,7 @@ import { createError } from '../middleware/errorHandler';
 // Agregar canción a favoritos
 export const addToFavorites = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = (req.user as any)?.userId;
     const songId = parseInt(req.params.songId);
 
     if (!userId) {
@@ -39,7 +39,7 @@ export const addToFavorites = async (req: Request, res: Response) => {
 // Quitar canción de favoritos
 export const removeFromFavorites = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = (req.user as any)?.userId;
     const songId = parseInt(req.params.songId);
 
     if (!userId) {
@@ -73,7 +73,7 @@ export const removeFromFavorites = async (req: Request, res: Response) => {
 // Alternar estado de favorito
 export const toggleFavorite = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = (req.user as any)?.userId;
     const songId = parseInt(req.params.songId);
 
     if (!userId) {
@@ -109,7 +109,7 @@ export const toggleFavorite = async (req: Request, res: Response) => {
 // Verificar si una canción está en favoritos
 export const isSongFavorite = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = (req.user as any)?.userId;
     const songId = parseInt(req.params.songId);
 
     if (!userId) {
@@ -141,7 +141,7 @@ export const isSongFavorite = async (req: Request, res: Response) => {
 // Obtener favoritos del usuario
 export const getUserFavorites = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = (req.user as any)?.userId;
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = parseInt(req.query.offset as string) || 0;
 

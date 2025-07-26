@@ -1,13 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-// Extender la interfaz Request para incluir clientIP
-declare global {
-  namespace Express {
-    interface Request {
-      clientIP?: string;
-    }
-  }
-}
+// Los tipos están definidos en src/types/express.d.ts
 
 /**
  * Middleware para capturar la dirección IP externa real del cliente
@@ -63,17 +56,17 @@ export const captureClientIP = (req: Request, res: Response, next: NextFunction)
       }
     }
 
-    req.clientIP = clientIP;
+    (req as any).clientIP = clientIP;
 
     // Log para debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🌐 External IP captured: ${req.clientIP} for ${req.method} ${req.path}`);
+      console.log(`🌐 External IP captured: ${(req as any).clientIP} for ${req.method} ${req.path}`);
     }
 
     next();
   } catch (error) {
     console.error('Error capturing client IP:', error);
-    req.clientIP = process.env.NODE_ENV === 'development' ? getSimulatedExternalIP() : '127.0.0.1';
+    (req as any).clientIP = process.env.NODE_ENV === 'development' ? getSimulatedExternalIP() : '127.0.0.1';
     next();
   }
 };
@@ -132,7 +125,7 @@ function isPrivateIP(ip: string): boolean {
  */
 export const getRequestInfo = (req: Request) => {
   return {
-    ip: req.clientIP || '127.0.0.1',
+    ip: (req as any).clientIP || '127.0.0.1',
     userAgent: req.headers['user-agent'] || '',
     referrer: req.headers.referer || req.headers.referrer || '',
     sessionId: req.sessionID || '',

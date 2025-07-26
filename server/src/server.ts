@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import dotenv from 'dotenv';
+import session from 'express-session';
+import passport from './config/passport';
 import { testConnection } from './config/database';
 import { setupRoutes } from './routes';
 import { errorHandler } from './middleware/errorHandler';
@@ -56,6 +58,22 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Captura de IP del cliente
 app.use(captureClientIP);
 app.use(logImportantRequest);
+
+// Configuración de Sesión
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'a-secret-key-for-session',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 horas
+    }
+}));
+
+// Inicialización de Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // =============================================
 // HEALTH CHECK

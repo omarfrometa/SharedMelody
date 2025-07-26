@@ -69,14 +69,17 @@ export const authService = {
   async getCurrentUser(): Promise<User | null> {
     try {
       const token = localStorage.getItem('accessToken');
-      const userStr = localStorage.getItem('user');
 
-      if (!token || !userStr) {
+      if (!token) {
         return null;
       }
 
-      // Verificar si el token sigue siendo válido
+      // Verificar si el token sigue siendo válido y obtener datos del usuario
       const response = await apiClient.get<User>('/auth/me');
+
+      // Guardar los datos del usuario en localStorage para futuras consultas
+      localStorage.setItem('user', JSON.stringify(response.data));
+
       return response.data;
     } catch (error) {
       // Si el token no es válido, limpiar el almacenamiento local
@@ -272,6 +275,10 @@ export const authUtils = {
   // Obtener token de acceso
   getAccessToken(): string | null {
     return localStorage.getItem('accessToken');
+  },
+
+  setAccessToken(token: string): void {
+   localStorage.setItem('accessToken', token);
   },
 
   // Obtener usuario del almacenamiento local

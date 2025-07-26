@@ -1,22 +1,22 @@
 import { Express } from 'express';
-import { songRoutes } from './songRoutes';
+// import { songRoutes } from './songRoutes';
 import { authRoutes } from './authRoutes';
 import { userRoutes } from './userRoutes';
 import { genreRoutes } from './genreRoutes';
 import { authorRoutes } from './authorRoutes';
-import statsRoutes from './statsRoutes';
-import { favoritesRoutes, publicFavoritesRoutes } from './favoritesRoutes';
+// import statsRoutes from './statsRoutes';
+// import { favoritesRoutes, publicFavoritesRoutes } from './favoritesRoutes';
 
 export const setupRoutes = (app: Express) => {
   // Rutas de la API
   app.use('/api/auth', authRoutes);
-  app.use('/api/songs', songRoutes);
+  // app.use('/api/songs', songRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/genres', genreRoutes);
   app.use('/api/authors', authorRoutes);
-  app.use('/api/stats', statsRoutes);
-  app.use('/api/favorites', favoritesRoutes);
-  app.use('/api/favorites', publicFavoritesRoutes);
+  // app.use('/api/stats', statsRoutes);
+  // app.use('/api/favorites', favoritesRoutes);
+  // app.use('/api/favorites', publicFavoritesRoutes);
 
   // Ruta raíz de la API
   app.get('/api', (req, res) => {

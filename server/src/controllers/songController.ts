@@ -75,7 +75,7 @@ export const getSongById = async (req: Request, res: Response, next: NextFunctio
 
     // Registrar visualización automáticamente
     try {
-      const ipAddress = req.clientIP || '127.0.0.1';
+      const ipAddress = (req as any).clientIP || '127.0.0.1';
       const userAgent = req.headers['user-agent'] || '';
       const sessionId = req.sessionID || '';
       const referrer = (req.headers.referer || req.headers.referrer || '') as string;

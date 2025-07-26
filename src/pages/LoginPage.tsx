@@ -21,7 +21,8 @@ import {
   Google as GoogleIcon,
   Facebook as FacebookIcon,
   Microsoft as MicrosoftIcon,
-  MusicNote as MusicNoteIcon
+  MusicNote as MusicNoteIcon,
+  Apple as AppleIcon
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -167,8 +168,7 @@ const LoginPage = () => {
   };
 
   const handleOAuthLogin = (provider: string) => {
-    // Implementar OAuth login
-    console.log(`Login with ${provider}`);
+    window.location.href = `http://localhost:3001/api/auth/${provider}`;
   };
 
   return (
@@ -349,6 +349,15 @@ const LoginPage = () => {
           >
             {t('auth.loginWith')} Microsoft
           </Button>
+          <Button
+           fullWidth
+           variant="outlined"
+           startIcon={<AppleIcon />}
+           onClick={() => handleOAuthLogin('apple')}
+           disabled={loading}
+         >
+           {t('auth.loginWith')} Apple
+         </Button>
         </Box>
 
         <Box sx={{ textAlign: 'center' }}>

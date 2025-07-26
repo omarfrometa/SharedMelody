@@ -35,8 +35,9 @@ CREATE TABLE IF NOT EXISTS users (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     
     -- Información básica
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
+    display_name VARCHAR(200),
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
     email VARCHAR(255) UNIQUE NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
     
@@ -96,7 +97,6 @@ CREATE TABLE IF NOT EXISTS user_oauth_accounts (
     refresh_token TEXT,
     token_expires_at TIMESTAMP WITH TIME ZONE,
     provider_email VARCHAR(255),
-    provider_name VARCHAR(255),
     provider_picture_url TEXT,
     raw_user_data JSONB, -- Datos completos del proveedor
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
