@@ -86,7 +86,7 @@ export const recordView = async (req: Request, res: Response, next: NextFunction
     const { songId } = req.params;
     const { userId } = req.body;
     
-    const ipAddress = req.clientIP || '127.0.0.1';
+    const ipAddress = (req as any).clientIP || '127.0.0.1';
     const userAgent = req.headers['user-agent'] || '';
     const sessionId = req.sessionID || '';
     const referrer = (req.headers.referer || req.headers.referrer || '') as string;

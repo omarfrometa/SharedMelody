@@ -40,7 +40,7 @@ import { songService } from '../services/songService';
 interface Song {
   songId: string;
   title: string;
-  artist: string;
+  artistName: string;
   genre: string;
   views: number;
   imageUrl?: string;
@@ -122,7 +122,7 @@ const CifraClubSongListPage = () => {
   const filteredSongs = songs.filter(song => {
     const matchesSearch = !searchValue ||
       (song.title && song.title.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (song.artist && song.artist.toLowerCase().includes(searchValue.toLowerCase()));
+      (song.artistName && song.artistName.toLowerCase().includes(searchValue.toLowerCase()));
     const matchesGenre = !selectedGenre || selectedGenre === 'Todos' || song.genre === selectedGenre;
     return matchesSearch && matchesGenre;
   });
@@ -332,7 +332,7 @@ const CifraClubSongListPage = () => {
                         }}
                       >
                         <PersonIcon sx={{ fontSize: 16 }} />
-                        {song.artist || 'Artista desconocido'}
+                        {song.artistName || 'Artista desconocido'}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
                         {song.genre && (
