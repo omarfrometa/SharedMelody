@@ -405,60 +405,81 @@ const SettingsPage: React.FC = () => {
               <Card>
                 <CardHeader title="Cambiar Contraseña" />
                 <CardContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <TextField
-                      fullWidth
-                      label="Contraseña actual"
-                      type={showCurrentPassword ? 'text' : 'password'}
-                      value={passwordData.currentPassword}
-                      onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                      InputProps={{
-                        endAdornment: (
-                          <IconButton
-                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                            edge="end"
-                          >
-                            {showCurrentPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                          </IconButton>
-                        )
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Nueva contraseña"
-                      type={showNewPassword ? 'text' : 'password'}
-                      value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                      InputProps={{
-                        endAdornment: (
-                          <IconButton
-                            onClick={() => setShowNewPassword(!showNewPassword)}
-                            edge="end"
-                          >
-                            {showNewPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                          </IconButton>
-                        )
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Confirmar nueva contraseña"
-                      type="password"
-                      value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    />
-                  </Box>
-                  
-                  <Box sx={{ mt: 3 }}>
-                    <Button
-                      variant="contained"
-                      onClick={handlePasswordSubmit}
-                      disabled={loading || !passwordData.currentPassword || !passwordData.newPassword}
-                      startIcon={loading ? <CircularProgress size={20} /> : <SecurityIcon />}
-                    >
-                      {loading ? 'Actualizando...' : 'Cambiar Contraseña'}
-                    </Button>
-                  </Box>
+                  {user.isOAuthUser ? (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <SecurityIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        Contraseña gestionada externamente
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Tu contraseña es gestionada por {user.authProviders?.[0] || 'tu proveedor OAuth'}.
+                        Para cambiarla, debes hacerlo desde tu cuenta de {user.authProviders?.[0] || 'proveedor'}.
+                      </Typography>
+                      <Chip
+                        label={`Gestionado por ${user.authProviders?.[0] || 'OAuth'}`}
+                        color="info"
+                        size="small"
+                        sx={{ textTransform: 'capitalize' }}
+                      />
+                    </Box>
+                  ) : (
+                    <>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <TextField
+                          fullWidth
+                          label="Contraseña actual"
+                          type={showCurrentPassword ? 'text' : 'password'}
+                          value={passwordData.currentPassword}
+                          onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                          InputProps={{
+                            endAdornment: (
+                              <IconButton
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                edge="end"
+                              >
+                                {showCurrentPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                              </IconButton>
+                            )
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Nueva contraseña"
+                          type={showNewPassword ? 'text' : 'password'}
+                          value={passwordData.newPassword}
+                          onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                          InputProps={{
+                            endAdornment: (
+                              <IconButton
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                edge="end"
+                              >
+                                {showNewPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                              </IconButton>
+                            )
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Confirmar nueva contraseña"
+                          type="password"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        />
+                      </Box>
+
+                      <Box sx={{ mt: 3 }}>
+                        <Button
+                          variant="contained"
+                          onClick={handlePasswordSubmit}
+                          disabled={loading || !passwordData.currentPassword || !passwordData.newPassword}
+                          startIcon={loading ? <CircularProgress size={20} /> : <SecurityIcon />}
+                        >
+                          {loading ? 'Actualizando...' : 'Cambiar Contraseña'}
+                        </Button>
+                      </Box>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </Box>
