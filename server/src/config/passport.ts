@@ -18,7 +18,25 @@ const findOrCreateUser = async (profile: any, providerName: string) => {
         const oauthResult = await client.query(oauthQuery, [providerName, profile.id]);
 
         if (oauthResult.rows.length > 0) {
-            return oauthResult.rows[0];
+            const user = oauthResult.rows[0];
+            console.log('🔍 OAuth user found, updating avatar if needed');
+            console.log('🔍 Google Profile Data:', {
+                email: profile.emails && profile.emails[0] ? profile.emails[0].value : null,
+                givenName: profile.name?.givenName,
+                familyName: profile.name?.familyName,
+                photos: profile.photos,
+                photoUrl: profile.photos && profile.photos[0] ? profile.photos[0].value : null
+            });
+
+            // Update avatar_url if we have one from the provider (always update to keep it fresh)
+            const avatarUrl = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
+            if (avatarUrl) {
+                console.log('💾 Updating OAuth user avatar_url:', avatarUrl);
+                await client.query('UPDATE users SET avatar_url = $1 WHERE user_id = $2', [avatarUrl, user.user_id]);
+                user.avatar_url = avatarUrl; // Update local object
+            }
+
+            return user;
         }
 
         // 3. If no linked account, find user by email
@@ -45,9 +63,9 @@ const findOrCreateUser = async (profile: any, providerName: string) => {
                 photoUrl: profile.photos && profile.photos[0] ? profile.photos[0].value : null
             });
 
-            // Update avatar_url if we have one from Google and user doesn't have one
+            // Update avatar_url if we have one from the provider (always update to keep it fresh)
             const avatarUrl = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
-            if (avatarUrl && !user.avatar_url) {
+            if (avatarUrl) {
                 console.log('💾 Updating existing user avatar_url:', avatarUrl);
                 await client.query('UPDATE users SET avatar_url = $1 WHERE user_id = $2', [avatarUrl, userId]);
                 user.avatar_url = avatarUrl; // Update local object

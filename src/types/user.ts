@@ -88,6 +88,7 @@ export interface User {
   phone?: string;
   dateOfBirth?: string;
   profilePictureUrl?: string;
+  avatarUrl?: string;
   bio?: string;
   roleId: string;
   role?: UserRole;
@@ -95,6 +96,8 @@ export interface User {
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;
+  authProviders?: string[];
+  isOAuthUser?: boolean;
 }
 
 export interface UserSession {

@@ -242,7 +242,7 @@ export const getMe = async (req: Request, res: Response) => {
         const client = await pool.connect();
         try {
             const userQuery = `
-                SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.role, u.is_active
+                SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.role, u.is_active, u.avatar_url
                 FROM users u
                 WHERE u.user_id = $1 AND u.is_active = true
             `;
@@ -257,6 +257,15 @@ export const getMe = async (req: Request, res: Response) => {
 
             const user = userResult.rows[0];
 
+            // Check if user has OAuth providers
+            const oauthQuery = `
+                SELECT provider_name
+                FROM auth_providers
+                WHERE user_id = $1
+            `;
+            const oauthResult = await client.query(oauthQuery, [user.user_id]);
+            const oauthProviders = oauthResult.rows.map(row => row.provider_name);
+
             return res.json({
                 userId: user.user_id,
                 username: user.username,
@@ -264,9 +273,12 @@ export const getMe = async (req: Request, res: Response) => {
                 firstName: user.first_name,
                 lastName: user.last_name,
                 isActive: user.is_active,
+                avatarUrl: user.avatar_url,
                 role: {
                     roleName: user.role
-                }
+                },
+                authProviders: oauthProviders,
+                isOAuthUser: oauthProviders.length > 0
             });
 
         } finally {

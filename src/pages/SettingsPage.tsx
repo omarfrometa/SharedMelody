@@ -26,7 +26,8 @@ import {
   ListItemSecondaryAction,
   Tabs,
   Tab,
-  Paper
+  Paper,
+  Chip
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -38,7 +39,9 @@ import {
   Save as SaveIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon
+  VisibilityOff as VisibilityOffIcon,
+  Google as GoogleIcon,
+  Facebook as FacebookIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -248,21 +251,30 @@ const SettingsPage: React.FC = () => {
                 <CardContent sx={{ textAlign: 'center' }}>
                   <Avatar
                     sx={{ width: 120, height: 120, mx: 'auto', mb: 2 }}
-                    src={user.profilePictureUrl}
+                    src={user.avatarUrl || user.profilePictureUrl}
                   >
                     <PersonIcon sx={{ fontSize: 60 }} />
                   </Avatar>
-                  <IconButton
-                    color="primary"
-                    component="label"
-                    sx={{ mb: 2 }}
-                  >
-                    <CameraIcon />
-                    <input type="file" hidden accept="image/*" />
-                  </IconButton>
-                  <Typography variant="body2" color="text.secondary">
-                    Haz clic para cambiar tu foto de perfil
-                  </Typography>
+                  {!user.isOAuthUser && (
+                    <>
+                      <IconButton
+                        color="primary"
+                        component="label"
+                        sx={{ mb: 2 }}
+                      >
+                        <CameraIcon />
+                        <input type="file" hidden accept="image/*" />
+                      </IconButton>
+                      <Typography variant="body2" color="text.secondary">
+                        Haz clic para cambiar tu foto de perfil
+                      </Typography>
+                    </>
+                  )}
+                  {user.isOAuthUser && (
+                    <Typography variant="body2" color="text.secondary">
+                      Foto sincronizada desde {user.authProviders?.[0] || 'proveedor OAuth'}
+                    </Typography>
+                  )}
                 </CardContent>
               </Card>
             </Box>
@@ -297,6 +309,8 @@ const SettingsPage: React.FC = () => {
                           label="Nombre de usuario"
                           value={profileData.username}
                           onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
+                          disabled={user.isOAuthUser}
+                          helperText={user.isOAuthUser ? `Gestionado por ${user.authProviders?.[0] || 'proveedor OAuth'}` : ''}
                         />
                       </Box>
                       <Box sx={{ minWidth: 200, flex: '1 1 200px' }}>
@@ -306,6 +320,8 @@ const SettingsPage: React.FC = () => {
                           type="email"
                           value={profileData.email}
                           onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                          disabled={user.isOAuthUser}
+                          helperText={user.isOAuthUser ? `Gestionado por ${user.authProviders?.[0] || 'proveedor OAuth'}` : ''}
                         />
                       </Box>
                     </Box>
@@ -333,6 +349,51 @@ const SettingsPage: React.FC = () => {
                   </Box>
                 </CardContent>
               </Card>
+
+              {/* Cuentas OAuth vinculadas */}
+              {user.isOAuthUser && (
+                <Card sx={{ mt: 3 }}>
+                  <CardHeader title="Cuentas Vinculadas" />
+                  <CardContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Tu cuenta está vinculada con los siguientes proveedores:
+                    </Typography>
+                    {user.authProviders?.map((provider) => (
+                      <Box
+                        key={provider}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          p: 2,
+                          border: 1,
+                          borderColor: 'divider',
+                          borderRadius: 1,
+                          mb: 1
+                        }}
+                      >
+                        {provider === 'google' && <GoogleIcon color="primary" />}
+                        {provider === 'facebook' && <FacebookIcon color="primary" />}
+                        {provider === 'microsoft' && <PersonIcon color="primary" />}
+                        {provider === 'apple' && <PersonIcon color="primary" />}
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
+                            {provider}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Cuenta vinculada - Email y nombre de usuario gestionados automáticamente
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label="Conectado"
+                          color="success"
+                          size="small"
+                        />
+                      </Box>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
             </Box>
           </Box>
         </TabPanel>

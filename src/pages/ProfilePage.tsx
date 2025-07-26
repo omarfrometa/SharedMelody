@@ -95,7 +95,7 @@ const ProfilePage: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
           <Avatar
             sx={{ width: 120, height: 120 }}
-            src={user.profilePictureUrl}
+            src={user.avatarUrl || user.profilePictureUrl}
           >
             <PersonIcon sx={{ fontSize: 60 }} />
           </Avatar>
