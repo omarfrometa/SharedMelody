@@ -1,0 +1,360 @@
+# ===================================
+# DEPENDENCIES
+# ===================================
+node_modules/
+server/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===================================
+# BUILD OUTPUTS
+# ===================================
+# React build
+build/
+dist/
+
+# Server build
+server/dist/
+
+# ===================================
+# ENVIRONMENT & CONFIG
+# ===================================
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+
+# Database configuration
+.env.database
+database.env
+
+# ===================================
+# LOGS
+# ===================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ===================================
+# TESTING
+# ===================================
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Jest
+jest-coverage/
+
+# ===================================
+# CACHE & TEMPORARY FILES
+# ===================================
+# Dependency directories
+.npm
+.eslintcache
+.stylelintcache
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# ===================================
+# EDITOR & IDE
+# ===================================
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ===================================
+# OS GENERATED FILES
+# ===================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===================================
+# TYPESCRIPT
+# ===================================
+*.tsbuildinfo
+
+# ===================================
+# DATABASES
+# ===================================
+# SQLite
+*.sqlite
+*.sqlite3
+*.db
+
+# PostgreSQL dumps
+*.sql.gz
+*.dump
+
+# Database backups
+backup/
+backups/
+
+# ===================================
+# UPLOADS & MEDIA
+# ===================================
+# User uploaded files
+uploads/
+public/uploads/
+server/uploads/
+static/uploads/
+
+# Audio files (if not tracked)
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+*.m4a
+
+# Image files (if not tracked)
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.webp
+# *.svg
+
+# ===================================
+# SECURITY & SECRETS
+# ===================================
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+
+# API keys and secrets
+secrets/
+.secrets
+config/secrets.json
+
+# JWT keys
+jwt-private.key
+jwt-public.key
+
+# ===================================
+# DOCKER
+# ===================================
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# ===================================
+# CLOUD & DEPLOYMENT
+# ===================================
+# Vercel
+.vercel
+
+# Netlify
+.netlify
+
+# AWS
+.aws/
+
+# Heroku
+.heroku/
+
+# ===================================
+# MONITORING & ANALYTICS
+# ===================================
+# Sentry
+.sentryclirc
+
+# ===================================
+# PACKAGE MANAGERS
+# ===================================
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# pnpm
+.pnpm-store/
+
+# ===================================
+# PROJECT SPECIFIC
+# ===================================
+# Local development files
+.local
+local/
+
+# Documentation builds
+docs/build/
+
+# Test files
+test-results/
+playwright-report/
+test-results.xml
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ===================================
+# RUNTIME & PROCESS
+# ===================================
+# PM2
+.pm2/
+
+# Forever
+.forever/
+
+# ===================================
+# MISC
+# ===================================
+# Ignore all .env files except .env.example
+.env*
+!.env.example
+
+# Local configuration overrides
+config/local.json
+config/local.js
+
+# Generated files
+generated/
+auto-generated/
+
+# Temporary development files
+scratch/
+playground/
+experiments/

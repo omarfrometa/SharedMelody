@@ -1,0 +1,494 @@
+import pool from '../config/database';
+import { createError } from '../middleware/errorHandler';
+
+export interface Song {
+  songId: number;
+  title: string;
+  artistId?: number;
+  artistName?: string;
+  albumId?: number;
+  albumName?: string;
+  genreId?: number;
+  genreName?: string;
+  lyrics?: string;
+  duration?: string;
+  fileUrl: string;
+  fileSize?: number;
+  fileFormat?: string;
+  isExplicit: boolean;
+  isPublic: boolean;
+  isApproved: boolean;
+  playsCount: number;
+  uploadDate: string;
+  uploadedBy?: number;
+}
+
+export interface SongFilters {
+  page?: number;
+  limit?: number;
+  genre?: string;
+  language?: string;
+  sortBy?: string;
+}
+
+export interface PaginatedSongs {
+  songs: Song[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export const songService = {
+  // Obtener canciones con filtros
+  async getSongs(filters: SongFilters = {}): Promise<PaginatedSongs> {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        genre,
+        language,
+        sortBy = 'created_at'
+      } = filters;
+
+      const offset = (page - 1) * limit;
+      
+      let query = `
+        SELECT
+          s.song_id as "songId",
+          s.title,
+          s.artist_id as "artistId",
+          COALESCE(a.name, 'Artista Desconocido') as "artistName",
+          s.album_id as "albumId",
+          COALESCE(al.title, 'Álbum Desconocido') as "albumName",
+          s.genre_id as "genreId",
+          COALESCE(g.name, 'Sin Género') as "genreName",
+          s.lyrics,
+          s.duration,
+          s.file_url as "fileUrl",
+          s.file_size as "fileSize",
+          s.file_format as "fileFormat",
+          s.is_explicit as "isExplicit",
+          s.is_public as "isPublic",
+          s.is_approved as "isApproved",
+          s.plays_count as "playsCount",
+          s.upload_date as "uploadDate",
+          s.uploaded_by as "uploadedBy"
+        FROM songs s
+        LEFT JOIN artists a ON s.artist_id = a.artist_id
+        LEFT JOIN albums al ON s.album_id = al.album_id
+        LEFT JOIN genres g ON s.genre_id = g.genre_id
+        WHERE s.is_public = true
+      `;
+
+      const params: any[] = [];
+      let paramCount = 0;
+
+      if (genre) {
+        paramCount++;
+        query += ` AND s.genre_id = $${paramCount}`;
+        params.push(genre);
+      }
+
+      if (language) {
+        paramCount++;
+        query += ` AND s.language_code = $${paramCount}`;
+        params.push(language);
+      }
+
+      // Ordenamiento
+      const validSortFields = ['upload_date', 'title', 'plays_count'];
+      const sortField = validSortFields.includes(sortBy) ? sortBy : 'upload_date';
+      query += ` ORDER BY s.${sortField} DESC`;
+
+      // Paginación
+      paramCount++;
+      query += ` LIMIT $${paramCount}`;
+      params.push(limit);
+
+      paramCount++;
+      query += ` OFFSET $${paramCount}`;
+      params.push(offset);
+
+      const result = await pool.query(query, params);
+
+      // Contar total de registros
+      let countQuery = `
+        SELECT COUNT(DISTINCT s.song_id) as total
+        FROM songs s
+        WHERE s.is_public = true
+      `;
+
+      const countParams: any[] = [];
+      let countParamCount = 0;
+
+      if (genre) {
+        countParamCount++;
+        countQuery += ` AND s.genre_id = $${countParamCount}`;
+        countParams.push(genre);
+      }
+
+      if (language) {
+        countParamCount++;
+        countQuery += ` AND s.language_code = $${countParamCount}`;
+        countParams.push(language);
+      }
+
+      const countResult = await pool.query(countQuery, countParams);
+      const total = parseInt(countResult.rows[0].total);
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        songs: result.rows,
+        page,
+        limit,
+        total,
+        totalPages
+      };
+    } catch (error) {
+      console.error('Error al obtener canciones:', error);
+      throw createError('Error al obtener canciones', 500);
+    }
+  },
+
+  // Buscar canciones
+  async searchSongs(searchQuery: string, filters: SongFilters = {}): Promise<PaginatedSongs> {
+    try {
+      const { page = 1, limit = 20 } = filters;
+      const offset = (page - 1) * limit;
+
+      const query = `
+        SELECT
+          s.song_id as "songId",
+          s.title,
+          s.artist_id as "artistId",
+          a.name as "artistName",
+          s.album_id as "albumId",
+          al.title as "albumName",
+          s.genre_id as "genreId",
+          g.name as "genreName",
+          s.lyrics,
+          s.duration,
+          s.file_url as "fileUrl",
+          s.file_size as "fileSize",
+          s.file_format as "fileFormat",
+          s.is_explicit as "isExplicit",
+          s.is_public as "isPublic",
+          s.is_approved as "isApproved",
+          s.plays_count as "playsCount",
+          s.upload_date as "uploadDate",
+          s.uploaded_by as "uploadedBy"
+        FROM songs s
+        LEFT JOIN artists a ON s.artist_id = a.artist_id
+        LEFT JOIN albums al ON s.album_id = al.album_id
+        LEFT JOIN genres g ON s.genre_id = g.genre_id
+        WHERE s.is_public = true
+        AND (
+          s.title ILIKE $1
+          OR a.name ILIKE $1
+          OR al.title ILIKE $1
+        )
+        GROUP BY s.song_id, a.name, al.title, g.name
+        ORDER BY s.plays_count DESC, s.upload_date DESC
+        LIMIT $2 OFFSET $3
+      `;
+
+      const searchPattern = `%${searchQuery}%`;
+      const result = await pool.query(query, [searchPattern, limit, offset]);
+
+      // Contar total de resultados
+      const countQuery = `
+        SELECT COUNT(DISTINCT s.song_id) as total
+        FROM songs s
+        LEFT JOIN artists a ON s.artist_id = a.artist_id
+        LEFT JOIN albums al ON s.album_id = al.album_id
+        WHERE s.is_public = true
+        AND (
+          s.title ILIKE $1
+          OR a.name ILIKE $1
+          OR al.title ILIKE $1
+        )
+      `;
+
+      const countResult = await pool.query(countQuery, [searchPattern]);
+      const total = parseInt(countResult.rows[0].total);
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        songs: result.rows,
+        page,
+        limit,
+        total,
+        totalPages
+      };
+    } catch (error) {
+      console.error('Error al buscar canciones:', error);
+      throw createError('Error al buscar canciones', 500);
+    }
+  },
+
+  // Obtener canción por ID
+  async getSongById(songId: string): Promise<Song | null> {
+    try {
+      const query = `
+        SELECT
+          s.song_id as "songId",
+          s.title,
+          s.artist_id as "artistId",
+          ar.name as "artistName",
+          s.author_id as "authorId",
+          a.author_name as "authorName",
+          s.album_id as "albumId",
+          al.title as "albumTitle",
+          s.release_year as "releaseYear",
+          s.genre_id as "genreId",
+          g.name as "genreName",
+          s.lyrics,
+          s.duration,
+          s.file_url as "fileUrl",
+          s.file_size as "fileSize",
+          s.file_format as "fileFormat",
+          s.is_explicit as "isExplicit",
+          s.is_public as "isPublic",
+          s.is_approved as "isApproved",
+          s.status,
+          s.upload_date as "uploadDate",
+          s.plays_count as "playsCount",
+          s.like_count as "likeCount"
+        FROM songs s
+        LEFT JOIN artists ar ON s.artist_id = ar.artist_id
+        LEFT JOIN authors a ON s.author_id = a.author_id
+        LEFT JOIN albums al ON s.album_id = al.album_id
+        LEFT JOIN genres g ON s.genre_id = g.genre_id
+        WHERE s.song_id = $1
+      `;
+
+      const result = await pool.query(query, [songId]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error al obtener canción por ID:', error);
+      throw createError('Error al obtener canción', 500);
+    }
+  },
+
+  // Crear nueva canción
+  async createSong(songData: any): Promise<Song> {
+    try {
+      const {
+        title,
+        artistName,
+        authorId, // ID del artista/autor seleccionado
+        album,
+        releaseYear,
+        genreId,
+        typeId,
+        lyrics,
+        lyricsFormat = 'html',
+        durationSeconds,
+        language = 'es',
+        explicitContent = false,
+        isCollaboration = false,
+        comments,
+        tags,
+        uploadedBy
+      } = songData;
+
+      console.log('🎵 Creando canción con datos:', {
+        title,
+        artistName,
+        authorId,
+        genreId
+      });
+
+      const query = `
+        INSERT INTO songs (
+          title, artist_name, author_id, album, release_year, 
+          genre_id, type_id, lyrics, lyrics_format, duration_seconds, 
+          language, explicit_content, is_collaboration, comments, 
+          tags, uploaded_by, status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'pending')
+        RETURNING
+          song_id as "songId",
+          title,
+          artist_name as "artistName",
+          author_id as "authorId",
+          album,
+          release_year as "releaseYear",
+          genre_id as "genreId",
+          type_id as "typeId",
+          lyrics,
+          duration_seconds as "durationSeconds",
+          language,
+          explicit_content as "explicitContent",
+          status,
+          created_at as "createdAt"
+      `;
+
+      const result = await pool.query(query, [
+        title,
+        artistName,
+        authorId || null, // ID del artista seleccionado
+        album || null,
+        releaseYear || null,
+        genreId || null,
+        typeId || null,
+        lyrics || null,
+        lyricsFormat,
+        durationSeconds || null,
+        language,
+        explicitContent,
+        isCollaboration,
+        comments || null,
+        tags || null,
+        uploadedBy || null
+      ]);
+
+      console.log('✅ Canción creada:', result.rows[0]);
+      return result.rows[0];
+    } catch (error) {
+      console.error('❌ Error al crear canción:', error);
+      throw createError('Error al crear canción', 500);
+    }
+  },
+
+  // Actualizar canción existente
+  async updateSong(songId: string, songData: any, userId?: number): Promise<Song> {
+    try {
+      const {
+        title,
+        artistId,
+        albumId,
+        genreId,
+        lyrics,
+        fileUrl,
+        fileSize,
+        fileFormat,
+        isExplicit = false,
+        isPublic = true
+      } = songData;
+
+      // Configurar el usuario actual para el trigger de versionado
+      if (userId) {
+        await pool.query('SELECT set_config($1, $2, true)', ['app.current_user_id', userId.toString()]);
+      }
+
+      // Si se proporciona un artistId, verificar que existe en la tabla artists
+      // Si no existe, crearlo basándose en los datos de authors
+      if (artistId) {
+        const artistExists = await pool.query('SELECT artist_id FROM artists WHERE artist_id = $1', [artistId]);
+
+        if (artistExists.rows.length === 0) {
+          // El artista no existe en la tabla artists, buscar en authors
+          const authorData = await pool.query('SELECT author_name FROM authors WHERE author_id = $1', [artistId]);
+
+          if (authorData.rows.length > 0) {
+            // Crear el artista en la tabla artists basándose en los datos del author
+            await pool.query(`
+              INSERT INTO artists (artist_id, name, is_active, created_at)
+              VALUES ($1, $2, true, NOW())
+              ON CONFLICT (artist_id) DO NOTHING
+            `, [artistId, authorData.rows[0].author_name]);
+
+            console.log(`🎤 Artista creado automáticamente: ID ${artistId}, Nombre: ${authorData.rows[0].author_name}`);
+          }
+        }
+      }
+
+      const query = `
+        UPDATE songs SET
+          title = $1,
+          artist_id = $2,
+          album_id = $3,
+          genre_id = $4,
+          lyrics = $5,
+          file_url = $6,
+          file_size = $7,
+          file_format = $8,
+          is_explicit = $9,
+          is_public = $10
+        WHERE song_id = $11
+        RETURNING
+          song_id as "songId",
+          title,
+          artist_id as "artistId",
+          album_id as "albumId",
+          genre_id as "genreId",
+          lyrics,
+          file_url as "fileUrl",
+          file_size as "fileSize",
+          file_format as "fileFormat",
+          is_explicit as "isExplicit",
+          is_public as "isPublic",
+          is_approved as "isApproved",
+          plays_count as "playsCount",
+          upload_date as "uploadDate",
+          uploaded_by as "uploadedBy"
+      `;
+
+      const result = await pool.query(query, [
+        title,
+        artistId,
+        albumId,
+        genreId,
+        lyrics || '',
+        fileUrl || '',
+        fileSize,
+        fileFormat,
+        isExplicit,
+        isPublic,
+        songId
+      ]);
+
+      if (result.rows.length === 0) {
+        throw createError('Canción no encontrada', 404);
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error al actualizar canción:', error);
+      throw createError('Error al actualizar canción', 500);
+    }
+  },
+
+  // Obtener historial de versiones de una canción
+  async getSongHistory(songId: string): Promise<any[]> {
+    try {
+      const query = `SELECT * FROM get_song_history($1)`;
+      const result = await pool.query(query, [songId]);
+      return result.rows;
+    } catch (error) {
+      console.error('Error al obtener historial de canción:', error);
+      throw createError('Error al obtener historial de canción', 500);
+    }
+  },
+
+  // Obtener una versión específica de una canción
+  async getSongVersion(versionId: string): Promise<any> {
+    try {
+      const query = `
+        SELECT
+          sv.*,
+          a.author_name as artist_name,
+          g.name as genre_name,
+          u.username as changed_by_username,
+          u.first_name || ' ' || u.last_name as changed_by_name
+        FROM song_versions sv
+        LEFT JOIN authors a ON sv.artist_id = a.author_id
+        LEFT JOIN genres g ON sv.genre_id = g.genre_id
+        LEFT JOIN users u ON sv.changed_by = u.user_id
+        WHERE sv.version_id = $1
+      `;
+
+      const result = await pool.query(query, [versionId]);
+
+      if (result.rows.length === 0) {
+        throw createError('Versión de canción no encontrada', 404);
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error al obtener versión de canción:', error);
+      throw createError('Error al obtener versión de canción', 500);
+    }
+  }
+};
