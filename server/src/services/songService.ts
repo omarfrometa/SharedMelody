@@ -283,13 +283,9 @@ export const songService = {
         genreId,
         typeId,
         lyrics,
-        lyricsFormat = 'html',
         durationSeconds,
-        language = 'es',
         explicitContent = false,
-        isCollaboration = false,
         comments,
-        tags,
         uploadedBy
       } = songData;
 
@@ -300,46 +296,85 @@ export const songService = {
         genreId
       });
 
+      // Si no se proporciona authorId pero sí artistName, crear o buscar el artista
+      let finalArtistId = authorId;
+      if (!finalArtistId && artistName) {
+        // Buscar si ya existe un artista con ese nombre
+        const existingArtist = await pool.query(
+          'SELECT artist_id FROM artists WHERE LOWER(name) = LOWER($1)',
+          [artistName]
+        );
+
+        if (existingArtist.rows.length > 0) {
+          finalArtistId = existingArtist.rows[0].artist_id;
+          console.log('🎤 Artista existente encontrado:', finalArtistId);
+        } else {
+          // Crear nuevo artista
+          const newArtist = await pool.query(
+            'INSERT INTO artists (name, biography) VALUES ($1, $2) RETURNING artist_id',
+            [artistName, `Artista: ${artistName}`]
+          );
+          finalArtistId = newArtist.rows[0].artist_id;
+          console.log('🎤 Nuevo artista creado:', finalArtistId);
+        }
+      }
+
+      // Si se proporciona album, crear o buscar el álbum
+      let finalAlbumId = null;
+      if (album) {
+        // Buscar si ya existe un álbum con ese nombre
+        const existingAlbum = await pool.query(
+          'SELECT album_id FROM albums WHERE LOWER(title) = LOWER($1)',
+          [album]
+        );
+
+        if (existingAlbum.rows.length > 0) {
+          finalAlbumId = existingAlbum.rows[0].album_id;
+          console.log('💿 Álbum existente encontrado:', finalAlbumId);
+        } else {
+          // Crear nuevo álbum
+          const newAlbum = await pool.query(
+            'INSERT INTO albums (title, artist_id, release_year) VALUES ($1, $2, $3) RETURNING album_id',
+            [album, finalArtistId, releaseYear]
+          );
+          finalAlbumId = newAlbum.rows[0].album_id;
+          console.log('💿 Nuevo álbum creado:', finalAlbumId);
+        }
+      }
+
       const query = `
         INSERT INTO songs (
-          title, artist_name, author_id, album, release_year, 
-          genre_id, type_id, lyrics, lyrics_format, duration_seconds, 
-          language, explicit_content, is_collaboration, comments, 
-          tags, uploaded_by, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'pending')
+          title, artist_id, album_id, release_year,
+          genre_id, type_id, lyrics, duration,
+          is_explicit, comments,
+          uploaded_by, status, file_url
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', '')
         RETURNING
           song_id as "songId",
           title,
-          artist_name as "artistName",
-          author_id as "authorId",
-          album,
+          artist_id as "artistId",
+          album_id as "albumId",
           release_year as "releaseYear",
           genre_id as "genreId",
           type_id as "typeId",
           lyrics,
-          duration_seconds as "durationSeconds",
-          language,
-          explicit_content as "explicitContent",
+          duration,
+          is_explicit as "explicitContent",
           status,
-          created_at as "createdAt"
+          upload_date as "createdAt"
       `;
 
       const result = await pool.query(query, [
         title,
-        artistName,
-        authorId || null, // ID del artista seleccionado
-        album || null,
+        finalArtistId || null,
+        finalAlbumId || null,
         releaseYear || null,
         genreId || null,
         typeId || null,
         lyrics || null,
-        lyricsFormat,
-        durationSeconds || null,
-        language,
+        durationSeconds ? `${durationSeconds} seconds` : null, // Convertir a interval
         explicitContent,
-        isCollaboration,
         comments || null,
-        tags || null,
         uploadedBy || null
       ]);
 
