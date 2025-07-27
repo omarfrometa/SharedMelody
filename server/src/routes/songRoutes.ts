@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getSongs, getSongById, searchSongs, createSong, updateSong, getSongHistory, getSongVersion } from '../controllers/songController';
+import { getSongs, getSongById, searchSongs, createSong, updateSong, deleteSong, getSongHistory, getSongVersion } from '../controllers/songController';
 import { toggleFavorite, isSongFavorite } from '../controllers/favoritesController';
 import { authenticateToken } from '../middleware/auth';
 // import { authenticateToken, optionalAuth, requireAdmin } from '../middleware/authMiddleware';
@@ -20,6 +20,9 @@ router.post('/', createSong);
 
 // PUT /api/songs/:id - Editar canción (requiere autenticación y ser admin o propietario)
 router.put('/:id', updateSong);
+
+// DELETE /api/songs/:id - Eliminar canción (solo admins)
+router.delete('/:id', authenticateToken, deleteSong);
 
 // GET /api/songs/:id/history - Obtener historial de versiones (solo admins)
 router.get('/:id/history', getSongHistory);

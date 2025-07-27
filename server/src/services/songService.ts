@@ -525,5 +525,27 @@ export const songService = {
       console.error('Error al obtener versión de canción:', error);
       throw createError('Error al obtener versión de canción', 500);
     }
+  },
+
+  // Eliminar canción
+  async deleteSong(songId: string): Promise<void> {
+    try {
+      const query = `
+        DELETE FROM songs
+        WHERE song_id = $1
+        RETURNING song_id
+      `;
+
+      const result = await pool.query(query, [songId]);
+
+      if (result.rows.length === 0) {
+        throw createError('Canción no encontrada', 404);
+      }
+
+      console.log('✅ Canción eliminada:', songId);
+    } catch (error) {
+      console.error('❌ Error al eliminar canción:', error);
+      throw createError('Error al eliminar canción', 500);
+    }
   }
 };

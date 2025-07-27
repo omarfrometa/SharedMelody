@@ -10,10 +10,12 @@ router.get('/all', async (req: Request, res: Response) => {
     try {
       const result = await client.query(`
         SELECT
-          genre_id as "genreId",
+          genre_id::text as "genreId",
           name as "genreName",
           description as "genreDescription",
-          parent_genre_id as "parentGenreId"
+          parent_genre_id::text as "parentGenreId",
+          true as "isActive",
+          CURRENT_TIMESTAMP as "createdAt"
         FROM genres
         ORDER BY name
       `);
@@ -41,10 +43,12 @@ router.get('/', async (req: Request, res: Response) => {
     try {
       let query = `
         SELECT
-          genre_id as "genreId",
+          genre_id::text as "genreId",
           name as "genreName",
           description as "genreDescription",
-          parent_genre_id as "parentGenreId"
+          parent_genre_id::text as "parentGenreId",
+          true as "isActive",
+          CURRENT_TIMESTAMP as "createdAt"
         FROM genres
       `;
 
@@ -100,10 +104,12 @@ router.get('/:id', async (req: Request, res: Response) => {
     try {
       const result = await client.query(`
         SELECT
-          genre_id as "genreId",
+          genre_id::text as "genreId",
           name as "genreName",
           description as "genreDescription",
-          parent_genre_id as "parentGenreId"
+          parent_genre_id::text as "parentGenreId",
+          true as "isActive",
+          CURRENT_TIMESTAMP as "createdAt"
         FROM genres
         WHERE genre_id = $1
       `, [id]);
@@ -146,10 +152,12 @@ router.post('/', async (req: Request, res: Response) => {
         INSERT INTO genres (name, description, parent_genre_id)
         VALUES ($1, $2, $3)
         RETURNING
-          genre_id as "genreId",
+          genre_id::text as "genreId",
           name as "genreName",
           description as "genreDescription",
-          parent_genre_id as "parentGenreId"
+          parent_genre_id::text as "parentGenreId",
+          true as "isActive",
+          CURRENT_TIMESTAMP as "createdAt"
       `, [genreName, genreDescription, parentGenreId || null]);
       
       return res.status(201).json({

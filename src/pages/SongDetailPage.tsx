@@ -23,7 +23,12 @@ import {
   Tabs,
   Tab,
   Collapse,
-  Tooltip
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import {
   PlayArrow as PlayIcon,
@@ -48,7 +53,8 @@ import {
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
   BugReport as CorrectIcon,
-  Print as PrintIcon
+  Print as PrintIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { SongDetailed } from '../types/song';
@@ -97,6 +103,8 @@ const SongDetailPage: React.FC = () => {
   const [comments, setComments] = useState<any[]>([]);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showDetailedStats, setShowDetailedStats] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Estados para el menú flotante
   const [fontSize, setFontSize] = useState(16);
@@ -501,6 +509,22 @@ const SongDetailPage: React.FC = () => {
     }
   };
 
+  const handleDeleteSong = async () => {
+    if (!songId) return;
+
+    try {
+      setDeleting(true);
+      await songService.deleteSong(songId);
+      setDeleteDialogOpen(false);
+      navigate('/songs', { replace: true });
+    } catch (error: any) {
+      console.error('Error al eliminar canción:', error);
+      alert(error.message || 'Error al eliminar la canción');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleSubmitComment = async () => {
     if (!user) {
       alert('Debes iniciar sesión para comentar');
@@ -713,6 +737,14 @@ const SongDetailPage: React.FC = () => {
                       title="Ver historial de versiones"
                     >
                       <HistoryIcon />
+                    </IconButton>
+
+                    <IconButton
+                      onClick={() => setDeleteDialogOpen(true)}
+                      color="error"
+                      title="Eliminar canción"
+                    >
+                      <DeleteIcon />
                     </IconButton>
                   </>
                 )}
@@ -1232,6 +1264,42 @@ const SongDetailPage: React.FC = () => {
           </Box>
         </TabPanel>
       </Card>
+
+      {/* Diálogo de confirmación para eliminar canción */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Confirmar eliminación
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            ¿Estás seguro de que deseas eliminar la canción "{song?.title}"?
+            <br />
+            <strong>Esta acción no se puede deshacer.</strong>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            disabled={deleting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleDeleteSong}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} /> : <DeleteIcon />}
+          >
+            {deleting ? 'Eliminando...' : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

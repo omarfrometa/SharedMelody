@@ -82,6 +82,8 @@ const SongUploadPage: React.FC = () => {
   const [genres, setGenres] = useState<MusicalGenre[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
   const [songTypes, setSongTypes] = useState<SongType[]>([]);
+
+  console.log('🔄 Estado inicial - Géneros:', genres.length, 'elementos');
   const [selectedGenre, setSelectedGenre] = useState<MusicalGenre | null>(null);
   const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null);
   const [selectedType, setSelectedType] = useState<SongType | null>(null);
@@ -98,13 +100,22 @@ const SongUploadPage: React.FC = () => {
     loadCatalogs();
   }, []);
 
+  // Debug: Verificar el estado de los géneros
+  useEffect(() => {
+    console.log('🎵 Estado de géneros actualizado:', genres);
+  }, [genres]);
+
   const loadCatalogs = async () => {
     try {
+      console.log('🔄 Cargando catálogos...');
       const [genresData, authorsData] = await Promise.all([
         genreService.getAllGenres(),
         authorService.getAuthors({ limit: 1000 })
       ]);
-      
+
+      console.log('🎵 Géneros cargados:', genresData);
+      console.log('👤 Autores cargados:', authorsData);
+
       setGenres(genresData);
       setAuthors(authorsData.data);
       
@@ -117,6 +128,12 @@ const SongUploadPage: React.FC = () => {
         { typeId: '5', typeName: 'Acoustic', typeDescription: 'Versión acústica', isActive: true, createdAt: '' }
       ]);
     } catch (err: any) {
+      console.error('❌ Error al cargar catálogos:', err);
+      console.error('❌ Detalles del error:', {
+        message: err.message,
+        response: err.response,
+        stack: err.stack
+      });
       setError(err.message || 'Error al cargar catálogos');
     }
   };
@@ -349,12 +366,21 @@ const SongUploadPage: React.FC = () => {
                   <Box sx={{ minWidth: 300, flex: '1 1 300px' }}>
                     <Autocomplete
                       options={genres}
-                      getOptionLabel={(option) => option.genreName}
+                      getOptionLabel={(option) => {
+                        console.log('🏷️ Obteniendo label para:', option);
+                        return option.genreName || 'Sin nombre';
+                      }}
                       value={selectedGenre}
-                      onChange={(event, newValue) => setSelectedGenre(newValue)}
+                      onChange={(event, newValue) => {
+                        console.log('🎵 Género seleccionado:', newValue);
+                        setSelectedGenre(newValue);
+                      }}
                       renderInput={(params) => (
                         <TextField {...params} label="Género musical" />
                       )}
+                      noOptionsText={`No hay géneros disponibles (${genres.length} cargados)`}
+                      loading={genres.length === 0}
+                      isOptionEqualToValue={(option, value) => option.genreId === value?.genreId}
                     />
                   </Box>
                   <Box sx={{ minWidth: 300, flex: '1 1 300px' }}>

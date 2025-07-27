@@ -185,4 +185,32 @@ export const getSongVersion = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+// Eliminar canción (solo admins)
+export const deleteSong = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    // Verificar que la canción existe
+    const existingSong = await songService.getSongById(id);
+    if (!existingSong) {
+      throw createError('Canción no encontrada', 404);
+    }
+
+    // Verificar permisos de administrador
+    const user = (req as any).user;
+    if (!user || user.role !== 'admin') {
+      throw createError('No tienes permisos para eliminar esta canción', 403);
+    }
+
+    await songService.deleteSong(id);
+
+    res.json({
+      success: true,
+      message: 'Canción eliminada exitosamente'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
