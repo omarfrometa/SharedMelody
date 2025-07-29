@@ -21,6 +21,11 @@ const AdminSongsPage = lazy(() => import('../pages/admin/AdminSongsPage'));
 const AdminRequestsPage = lazy(() => import('../pages/admin/AdminRequestsPage'));
 const AdminAuthorsPage = lazy(() => import('../pages/admin/AdminAuthorsPage'));
 const AdminGenresPage = lazy(() => import('../pages/admin/AdminGenresPage'));
+const AdminAlbumsPage = lazy(() => import('../pages/admin/AdminAlbumsPage'));
+const AdminArtistsPage = lazy(() => import('../pages/admin/AdminArtistsPage'));
+const AdminCountriesPage = lazy(() => import('../pages/admin/AdminCountriesPage'));
+const AdminRolesPage = lazy(() => import('../pages/admin/AdminRolesPage'));
+const AdminAuthProvidersPage = lazy(() => import('../pages/admin/AdminAuthProvidersPage'));
 
 // Páginas de canciones
 const SongUploadPage = lazy(() => import('../pages/SongUploadPage'));
@@ -131,6 +136,31 @@ export const AppRoutes = () => {
           <Route path="admin/genres" element={
             <ProtectedRoute requiredRole="admin">
               <AdminGenresPage />
+            </ProtectedRoute>
+          } />
+          <Route path="admin/albums" element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminAlbumsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="admin/artists" element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminArtistsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="admin/countries" element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminCountriesPage />
+            </ProtectedRoute>
+          } />
+          <Route path="admin/roles" element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminRolesPage />
+            </ProtectedRoute>
+          } />
+          <Route path="admin/auth-providers" element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminAuthProvidersPage />
             </ProtectedRoute>
           } />
         </Route>

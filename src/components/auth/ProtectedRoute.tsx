@@ -69,15 +69,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Verificar si el email está verificado para ciertas rutas
-  if (!user.emailVerified && location.pathname.includes('/admin')) {
-    return (
-      <Box p={3}>
-        <Alert severity="warning">
-          Debes verificar tu email antes de acceder a las funciones de administración.
-        </Alert>
-      </Box>
-    );
-  }
+  // NOTA: Comentado temporalmente para desarrollo
+  // if (!user.emailVerified && location.pathname.includes('/admin')) {
+  //   return (
+  //     <Box p={3}>
+  //       <Alert severity="warning">
+  //         Debes verificar tu email antes de acceder a las funciones de administración.
+  //       </Alert>
+  //     </Box>
+  //   );
+  // }
 
   // Verificar si la cuenta está activa
   if (!user.isActive) {

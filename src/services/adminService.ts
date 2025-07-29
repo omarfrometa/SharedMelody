@@ -27,8 +27,8 @@ export const adminService = {
   // Dashboard y estadísticas
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const response = await apiClient.get<DashboardStats>('/admin/dashboard/stats');
-      return response.data;
+      const response = await apiClient.get<{success: boolean, data: DashboardStats, message: string}>('/admin/dashboard/stats');
+      return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Error al obtener estadísticas del dashboard');
     }
@@ -57,10 +57,13 @@ export const adminService = {
   // Gestión de usuarios
   async getUsers(filters?: AdminUserFilters): Promise<PaginatedResponse<User>> {
     try {
-      const response = await apiClient.get<PaginatedResponse<User>>('/admin/users', {
+      const response = await apiClient.get<{success: boolean, data: User[], pagination: any, message: string}>('/admin/users', {
         params: filters
       });
-      return response.data;
+      return {
+        data: response.data.data,
+        pagination: response.data.pagination
+      };
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Error al obtener usuarios');
     }
@@ -346,6 +349,59 @@ export const adminService = {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Error al obtener estado del sistema');
+    }
+  },
+
+  // Gestión de solicitudes
+  async getRequests(filters?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    priority?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }): Promise<PaginatedResponse<any>> {
+    try {
+      const response = await apiClient.get<{success: boolean, data: any[], pagination: any, message: string}>('/admin/requests', {
+        params: filters
+      });
+      return {
+        data: response.data.data,
+        pagination: response.data.pagination
+      };
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al obtener solicitudes');
+    }
+  },
+
+  async getRequestById(id: string): Promise<any> {
+    try {
+      const response = await apiClient.get<{success: boolean, data: any, message: string}>(`/admin/requests/${id}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al obtener solicitud');
+    }
+  },
+
+  async updateRequestStatus(id: string, data: {
+    status?: string;
+    priority?: string;
+    fulfilled_with?: number;
+  }): Promise<any> {
+    try {
+      const response = await apiClient.put<{success: boolean, data: any, message: string}>(`/admin/requests/${id}/status`, data);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al actualizar solicitud');
+    }
+  },
+
+  async deleteRequest(id: string): Promise<void> {
+    try {
+      await apiClient.delete<{success: boolean, message: string}>(`/admin/requests/${id}`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al eliminar solicitud');
     }
   }
 };

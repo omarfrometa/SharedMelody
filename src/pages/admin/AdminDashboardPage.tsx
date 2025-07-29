@@ -7,7 +7,6 @@ import {
   CardContent,
   CardActions,
   Button,
-  Paper,
   List,
   ListItem,
   ListItemText,
@@ -19,17 +18,20 @@ import {
   Divider
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
   People as UsersIcon,
   MusicNote as SongsIcon,
   RequestPage as RequestsIcon,
   Group as CollaborationsIcon,
-  Notifications as NotificationsIcon,
   TrendingUp as TrendingIcon,
-  Warning as WarningIcon,
   CheckCircle as CheckIcon,
   Schedule as PendingIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  Album as AlbumsIcon,
+  Person as ArtistsIcon,
+  Security as AuthProvidersIcon,
+  Edit as AuthorsIcon,
+  Public as CountriesIcon,
+  AdminPanelSettings as RolesIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { DashboardStats } from '../../types/admin';
@@ -42,19 +44,22 @@ const AdminDashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user && hasRole('admin')) {
+    if (user && hasRole && hasRole('admin')) {
       loadDashboardStats();
     }
-  }, [user]);
+  }, [user, hasRole]);
 
   const loadDashboardStats = async () => {
     try {
       setLoading(true);
       setError(null);
-      const dashboardData = await adminService.getDashboardStats();
-      setStats(dashboardData);
+
+      const dashboardStats = await adminService.getDashboardStats();
+      setStats(dashboardStats);
     } catch (err: any) {
+      console.error('Error al cargar estadísticas:', err);
       setError(err.message || 'Error al cargar estadísticas');
+      setStats(null);
     } finally {
       setLoading(false);
     }
@@ -94,15 +99,148 @@ const AdminDashboardPage: React.FC = () => {
     );
   }
 
+  if (!stats) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          No se pudieron cargar las estadísticas del dashboard.
+        </Alert>
+        <Button variant="contained" onClick={loadDashboardStats}>
+          Cargar estadísticas
+        </Button>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Panel de Administración
       </Typography>
-      
+
       <Typography variant="body1" color="text.secondary" paragraph>
         Bienvenido al panel de administración de SharedMelody. Aquí puedes gestionar usuarios, canciones, solicitudes y más.
       </Typography>
+
+      {/* Menú de opciones de administración */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ mt: 4, mb: 3 }}>
+          Opciones de Administración
+        </Typography>
+
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 3 }}>
+          {/* Gestión de Contenido */}
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <SongsIcon color="primary" />
+              Gestión de Contenido
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<SongsIcon />}
+                href="/admin/songs"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Canciones
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<AlbumsIcon />}
+                href="/admin/albums"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Álbumes
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<ArtistsIcon />}
+                href="/admin/artists"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Artistas
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<AuthorsIcon />}
+                href="/admin/authors"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Autores
+              </Button>
+            </Box>
+          </Card>
+
+          {/* Gestión de Usuarios */}
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <UsersIcon color="primary" />
+              Gestión de Usuarios
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<UsersIcon />}
+                href="/admin/users"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Usuarios
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<RolesIcon />}
+                href="/admin/roles"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Roles
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<RequestsIcon />}
+                href="/admin/requests"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Solicitudes
+              </Button>
+            </Box>
+          </Card>
+
+          {/* Configuración del Sistema */}
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AuthProvidersIcon color="primary" />
+              Configuración del Sistema
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<CountriesIcon />}
+                href="/admin/countries"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Países
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<AuthProvidersIcon />}
+                href="/admin/auth-providers"
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Proveedores de Autenticación
+              </Button>
+            </Box>
+          </Card>
+        </Box>
+      </Box>
 
       {stats && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -392,49 +530,98 @@ const AdminDashboardPage: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Acciones Rápidas
+                  Módulos de Administración
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                  <Box sx={{ minWidth: 200, flex: '1 1 200px' }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<UsersIcon />}
-                      href="/admin/users"
-                    >
-                      Gestionar Usuarios
-                    </Button>
-                  </Box>
-                  <Box sx={{ minWidth: 200, flex: '1 1 200px' }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<SongsIcon />}
-                      href="/admin/songs"
-                    >
-                      Moderar Canciones
-                    </Button>
-                  </Box>
-                  <Box sx={{ minWidth: 200, flex: '1 1 200px' }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<RequestsIcon />}
-                      href="/admin/requests"
-                    >
-                      Ver Solicitudes
-                    </Button>
-                  </Box>
-                  <Box sx={{ minWidth: 200, flex: '1 1 200px' }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<NotificationsIcon />}
-                      onClick={() => window.location.reload()}
-                    >
-                      Actualizar Dashboard
-                    </Button>
-                  </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 2 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<UsersIcon />}
+                    href="/admin/users"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Administración de Usuarios
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<SongsIcon />}
+                    href="/admin/songs"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Administración de Canciones
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<AlbumsIcon />}
+                    href="/admin/albums"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Administración de Álbumes
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<ArtistsIcon />}
+                    href="/admin/artists"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Administración de Artistas
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<AuthorsIcon />}
+                    href="/admin/authors"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Administración de Autores
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<CountriesIcon />}
+                    href="/admin/countries"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Administración de Países
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<AuthProvidersIcon />}
+                    href="/admin/auth-providers"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Proveedores de Autenticación
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<RolesIcon />}
+                    href="/admin/roles"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Administración de Roles
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<RequestsIcon />}
+                    href="/admin/requests"
+                    sx={{ justifyContent: 'flex-start', p: 2 }}
+                  >
+                    Ver Solicitudes
+                  </Button>
                 </Box>
               </CardContent>
             </Card>

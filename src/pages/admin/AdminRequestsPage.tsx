@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { SongRequestDetailed } from '../../types/song';
+import { adminService } from '../../services/adminService';
 
 const AdminRequestsPage: React.FC = () => {
   const { user, hasRole } = useAuth();
@@ -53,7 +54,7 @@ const AdminRequestsPage: React.FC = () => {
   const [filters, setFilters] = useState({
     search: '',
     status: '',
-    priorityLevel: '',
+    priority: '',
     sortBy: 'created_at',
     sortOrder: 'desc' as 'asc' | 'desc'
   });
@@ -71,53 +72,86 @@ const AdminRequestsPage: React.FC = () => {
     }
   }, [user, page, rowsPerPage, filters]);
 
+  // Funciones auxiliares para mapear datos
+  const mapBackendStatusToFrontend = (status: string): "pending" | "completed" | "rejected" | "in_progress" | "cancelled" => {
+    const statusMap: { [key: string]: "pending" | "completed" | "rejected" | "in_progress" | "cancelled" } = {
+      'pending': 'pending',
+      'fulfilled': 'completed',
+      'canceled': 'rejected'
+    };
+    return statusMap[status] || 'pending';
+  };
+
+  const mapPriorityToLevel = (priority: string): 1 | 2 | 3 => {
+    const priorityMap: { [key: string]: 1 | 2 | 3 } = {
+      'low': 1,
+      'normal': 2,
+      'high': 3,
+      'urgent': 3 // Mapear urgent a 3 también ya que el tipo solo acepta 1, 2, 3
+    };
+    return priorityMap[priority] || 2;
+  };
+
+  const mapLevelToPriority = (level: number): string => {
+    const levelMap: { [key: number]: string } = {
+      1: 'low',
+      2: 'normal',
+      3: 'high',
+      4: 'urgent'
+    };
+    return levelMap[level] || 'normal';
+  };
+
+  const mapFrontendStatusToBackend = (status: string): string => {
+    const statusMap: { [key: string]: string } = {
+      'pending': 'pending',
+      'completed': 'fulfilled',
+      'rejected': 'canceled'
+    };
+    return statusMap[status] || status;
+  };
+
   const loadRequests = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Simular datos para demostración
-      const mockRequests: SongRequestDetailed[] = [
-        {
-          requestId: '1',
-          title: 'Bohemian Rhapsody',
-          artistName: 'Queen',
-          album: 'A Night at the Opera',
-          authorName: 'Freddie Mercury',
-          genrePreference: 'Rock',
-          comments: 'Necesito la versión completa con todos los arreglos',
-          priorityLevel: 3,
-          requestedBy: 'user1',
-          requestedByUsername: 'musiclover',
-          requestedByName: 'Juan Pérez',
-          requestedByEmail: 'juan@example.com',
-          status: 'pending',
-          notificationSent: false,
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-15T10:30:00Z'
-        },
-        {
-          requestId: '2',
-          title: 'Imagine',
-          artistName: 'John Lennon',
-          comments: 'Para un proyecto escolar',
-          priorityLevel: 1,
-          requestedBy: 'user2',
-          requestedByUsername: 'student123',
-          requestedByName: 'María García',
-          requestedByEmail: 'maria@example.com',
-          status: 'in_progress',
-          fulfilledBy: 'user3',
-          fulfilledByUsername: 'contributor',
-          fulfilledByName: 'Carlos López',
-          notificationSent: true,
-          createdAt: '2024-01-14T15:20:00Z',
-          updatedAt: '2024-01-16T09:15:00Z'
-        }
-      ];
-      
-      setRequests(mockRequests);
-      setTotalRequests(mockRequests.length);
+
+      const response = await adminService.getRequests({
+        page: page + 1, // La API usa páginas basadas en 1
+        limit: rowsPerPage,
+        status: filters.status || undefined,
+        priority: filters.priority || undefined,
+        search: filters.search || undefined,
+        sortBy: 'request_date',
+        sortOrder: 'desc'
+      });
+
+      // Mapear los datos del backend al formato esperado por el frontend
+      const mappedRequests: SongRequestDetailed[] = response.data.map((request: any) => ({
+        requestId: request.request_id.toString(),
+        title: request.title,
+        artistName: request.artist,
+        requestedBy: request.user_id?.toString() || '',
+        requestedByUsername: request.requester_username || '',
+        requestedByName: request.requester_name || '',
+        requestedByEmail: request.requester_email || '',
+        status: mapBackendStatusToFrontend(request.status),
+        priorityLevel: mapPriorityToLevel(request.priority),
+        fulfilledBy: request.fulfilled_by?.toString() || undefined,
+        fulfilledByUsername: request.fulfilled_by_username || undefined,
+        fulfilledByName: request.fulfilled_by_name || undefined,
+        fulfilledWith: request.fulfilled_song_title || undefined,
+        createdAt: request.request_date,
+        updatedAt: request.fulfilled_date || request.request_date,
+        notificationSent: false, // Este campo no existe en la BD, usar false por defecto
+        comments: '', // Este campo no existe en la BD, usar string vacío
+        album: '', // Este campo no existe en la BD
+        authorName: '', // Este campo no existe en la BD
+        genrePreference: '' // Este campo no existe en la BD
+      })) as SongRequestDetailed[];
+
+      setRequests(mappedRequests);
+      setTotalRequests(response.pagination.total);
     } catch (err: any) {
       setError(err.message || 'Error al cargar solicitudes');
     } finally {
@@ -143,16 +177,15 @@ const AdminRequestsPage: React.FC = () => {
     if (!selectedRequest || !moderationAction) return;
 
     try {
-      // Aquí iría la llamada a la API para moderar la solicitud
-      console.log('Moderating request:', selectedRequest.requestId, moderationAction, moderationNotes);
-      
-      // Actualizar el estado local
-      setRequests(prev => prev.map(req => 
-        req.requestId === selectedRequest.requestId 
-          ? { ...req, status: moderationAction === 'approve' ? 'in_progress' : 'rejected' }
-          : req
-      ));
-      
+      const newStatus = moderationAction === 'approve' ? 'fulfilled' : 'canceled';
+
+      await adminService.updateRequestStatus(selectedRequest.requestId, {
+        status: newStatus
+      });
+
+      // Recargar las solicitudes para obtener los datos actualizados
+      await loadRequests();
+
       setModerateDialogOpen(false);
       setModerationAction('');
       setModerationNotes('');
@@ -246,14 +279,15 @@ const AdminRequestsPage: React.FC = () => {
               <FormControl fullWidth>
                 <InputLabel>Prioridad</InputLabel>
                 <Select
-                  value={filters.priorityLevel}
-                  onChange={(e) => handleFilterChange('priorityLevel', e.target.value)}
+                  value={filters.priority}
+                  onChange={(e) => handleFilterChange('priority', e.target.value)}
                   label="Prioridad"
                 >
                   <MenuItem value="">Todas</MenuItem>
-                  <MenuItem value="1">Baja</MenuItem>
-                  <MenuItem value="2">Media</MenuItem>
-                  <MenuItem value="3">Alta</MenuItem>
+                  <MenuItem value="low">Baja</MenuItem>
+                  <MenuItem value="normal">Media</MenuItem>
+                  <MenuItem value="high">Alta</MenuItem>
+                  <MenuItem value="urgent">Urgente</MenuItem>
                 </Select>
               </FormControl>
             </Box>
