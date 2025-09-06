@@ -1,0 +1,186 @@
+# =============================================
+# SHARED MELODY - DOCKER COMPOSE
+# Development and Production Setup
+# =============================================
+
+version: '3.8'
+
+services:
+  # =============================================
+  # POSTGRESQL DATABASE
+  # =============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: sharedmelody_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sharedmelody_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password_change_me
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/initial_data.sql:/docker-entrypoint-initdb.d/02-initial_data.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sharedmelody_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sharedmelody_network
+
+  # =============================================
+  # REDIS (Session Store)
+  # =============================================
+  redis:
+    image: redis:7-alpine
+    container_name: sharedmelody_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_password_change_me
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sharedmelody_network
+
+  # =============================================
+  # SHARED MELODY APPLICATION
+  # =============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sharedmelody_app
+    restart: unless-stopped
+    environment:
+      # Server Configuration
+      NODE_ENV: production
+      PORT: 3001
+      FRONTEND_URL: http://localhost:3000
+
+      # Database Configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: sharedmelody_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres_password_change_me
+      DB_POOL_MAX: 20
+      DB_POOL_MIN: 0
+      DB_IDLE_TIMEOUT: 10000
+      DB_CONNECTION_TIMEOUT: 30000
+
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password_change_me
+
+      # JWT Configuration (CHANGE THESE IN PRODUCTION!)
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_EXPIRES_IN: 24h
+      JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-in-production
+      JWT_REFRESH_EXPIRES_IN: 7d
+
+      # Email Configuration (Configure for production)
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_USER: your-email@gmail.com
+      EMAIL_PASSWORD: your-app-password
+      EMAIL_FROM: noreply@sharedmelody.com
+
+      # File Upload Configuration
+      UPLOAD_MAX_SIZE: 10485760
+      UPLOAD_ALLOWED_TYPES: image/jpeg,image/png,image/gif,audio/mpeg,audio/wav,audio/flac
+      UPLOAD_DEST: ./uploads
+
+      # Rate Limiting
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+
+      # OAuth Providers (Configure as needed)
+      # GOOGLE_CLIENT_ID: your-google-client-id
+      # GOOGLE_CLIENT_SECRET: your-google-client-secret
+      # FACEBOOK_APP_ID: your-facebook-app-id
+      # FACEBOOK_APP_SECRET: your-facebook-app-secret
+      # MICROSOFT_CLIENT_ID: your-microsoft-client-id
+      # MICROSOFT_CLIENT_SECRET: your-microsoft-client-secret
+      # APPLE_CLIENT_ID: your-apple-client-id
+      # APPLE_TEAM_ID: your-apple-team-id
+      # APPLE_KEY_ID: your-apple-key-id
+      # APPLE_PRIVATE_KEY_PATH: ./keys/apple-private-key.p8
+
+    ports:
+      - "3001:3001"
+    volumes:
+      - app_uploads:/app/server/uploads
+      - app_logs:/app/server/logs
+      # Mount SSL certificates or keys if needed
+      # - ./keys:/app/server/keys:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - sharedmelody_network
+
+  # =============================================
+  # NGINX (Optional - for serving frontend)
+  # =============================================
+  nginx:
+    image: nginx:alpine
+    container_name: sharedmelody_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - app_static:/var/www/html
+      # Mount SSL certificates if needed
+      # - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - sharedmelody_network
+    profiles:
+      - nginx
+
+# =============================================
+# VOLUMES
+# =============================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_uploads:
+    driver: local
+  app_logs:
+    driver: local
+  app_static:
+    driver: local
+
+# =============================================
+# NETWORKS
+# =============================================
+networks:
+  sharedmelody_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
