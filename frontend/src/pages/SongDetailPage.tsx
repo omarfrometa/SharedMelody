@@ -88,7 +88,7 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other })
 };
 
 const SongDetailPage: React.FC = () => {
-  const { songId } = useParams<{ songId: string }>();
+  const { id: songId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, hasRole } = useAuth();
   const queryClient = useQueryClient();

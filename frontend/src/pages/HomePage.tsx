@@ -6,35 +6,35 @@ import {
   IconButton,
   Card,
   CardContent,
-  CardActions,
   Chip,
-  CircularProgress,
   Paper,
-  alpha,
-  useTheme,
   Fade,
-  Skeleton
+  Skeleton,
+  Container,
+  Stack
 } from '@mui/material';
 import {
   Search as SearchIcon,
   PlayArrow as PlayIcon,
-  Favorite as FavoriteIcon,
-  Share as ShareIcon,
   Add as AddIcon,
-  TrendingUp as TrendingIcon,
   MusicNote as MusicNoteIcon,
-  Album as AlbumIcon
+  GraphicEq as GraphicEqIcon,
+  Headphones as HeadphonesIcon,
+  Piano as PianoIcon,
+  Mic as MicIcon,
+  LibraryMusic as LibraryMusicIcon,
+  Waves as WavesIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { songService } from '../services/songService';
 import { statsService, TopSong, TopArtist } from '../services/statsService';
 import { SongDetailed, PaginatedResponse } from '../types/song';
+import { customStyles, colors } from '../theme/theme';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
   const [query, setQuery] = useState('');
   const [search, setSearch] = useState('');
 
@@ -48,130 +48,261 @@ const HomePage = () => {
     queryFn: () => statsService.getTopSongs(10),
   });
 
-  const { data: topArtists, isLoading: isLoadingTopArtists } = useQuery<TopArtist[], Error>({
-    queryKey: ['topArtists'],
-    queryFn: () => statsService.getTopArtists(5),
-  });
-
   const songs = songsResponse?.data || [];
 
   const handleSearch = () => setSearch(query);
 
-  return (
-    <Box>
-      {/* Hero Section */}
-      <Box sx={{
-        textAlign: 'center',
-        mb: 6,
-        py: 4,
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-        borderRadius: 3,
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23000" fill-opacity="0.02"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          opacity: 0.5
-        }} />
+  // Premium stats for the hero section
+  const stats = [
+    { 
+      icon: <LibraryMusicIcon sx={{ fontSize: 40 }} />,
+      value: songs.length.toLocaleString(),
+      label: 'Canciones Premium',
+      color: colors.music.melody,
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    },
+    { 
+      icon: <HeadphonesIcon sx={{ fontSize: 40 }} />,
+      value: songs.reduce((acc, song) => acc + (song.playsCount || 0), 0).toLocaleString(),
+      label: 'Reproducciones Totales',
+      color: colors.music.rhythm,
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+    },
+    { 
+      icon: <MicIcon sx={{ fontSize: 40 }} />,
+      value: new Set(songs.map(song => song.genreName)).size,
+      label: 'Géneros Únicos',
+      color: colors.music.harmony,
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+    }
+  ];
 
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
+  return (
+    <Box sx={{
+      minHeight: '100vh',
+      background: colors.gradient.dark,
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* 🌟 ANIMATED BACKGROUND PARTICLES */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: `
+          radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(34, 211, 238, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.2) 0%, transparent 50%)
+        `,
+        animation: 'float 8s ease-in-out infinite',
+        '@keyframes float': {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '50%': { transform: 'translateY(-20px) rotate(180deg)' }
+        }
+      }} />
+
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2, py: 4 }}>
+        {/* 🚀 REVOLUTIONARY HERO SECTION */}
+        <Box sx={{
+          textAlign: 'center',
+          py: { xs: 8, md: 12 },
+          position: 'relative'
+        }}>
+          {/* Floating Music Icons */}
+          <Box sx={{
+            position: 'absolute',
+            top: '10%',
+            left: '10%',
+            animation: 'pulse 3s ease-in-out infinite',
+            '@keyframes pulse': {
+              '0%, 100%': { transform: 'scale(1)', opacity: 0.7 },
+              '50%': { transform: 'scale(1.2)', opacity: 1 }
+            }
+          }}>
+            <PianoIcon sx={{ fontSize: 40, color: colors.music.melody, opacity: 0.6 }} />
+          </Box>
+          <Box sx={{
+            position: 'absolute',
+            top: '20%',
+            right: '15%',
+            animation: 'pulse 4s ease-in-out infinite 1s',
+          }}>
+            <GraphicEqIcon sx={{ fontSize: 35, color: colors.music.rhythm, opacity: 0.6 }} />
+          </Box>
+          <Box sx={{
+            position: 'absolute',
+            bottom: '10%',
+            left: '20%',
+            animation: 'pulse 3.5s ease-in-out infinite 2s',
+          }}>
+            <WavesIcon sx={{ fontSize: 45, color: colors.music.bass, opacity: 0.6 }} />
+          </Box>
+
+          {/* Main Title with Gradient Animation */}
           <Typography
-            variant="h2"
+            variant="h1"
             component="h1"
             gutterBottom
             sx={{
-              fontWeight: 800,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              mb: 2
+              ...customStyles.gradientText,
+              mb: 3,
+              textShadow: '0 4px 20px rgba(168, 85, 247, 0.3)',
+              animation: 'glow 2s ease-in-out infinite alternate',
+              '@keyframes glow': {
+                '0%': { textShadow: '0 4px 20px rgba(168, 85, 247, 0.3)' },
+                '100%': { textShadow: '0 8px 40px rgba(168, 85, 247, 0.6)' }
+              }
             }}
           >
             SharedMelody
           </Typography>
 
           <Typography
-            variant="h5"
-            color="text.secondary"
-            gutterBottom
-            sx={{ mb: 4, fontWeight: 300 }}
-          >
-            Descubre, comparte y colabora en la música que amas
-          </Typography>
-
-          {/* Search Bar */}
-          <Paper
-            elevation={0}
+            variant="h4"
             sx={{
-              p: 1,
-              display: 'flex',
-              alignItems: 'center',
-              maxWidth: 600,
-              mx: 'auto',
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              borderRadius: 3,
-              '&:hover': {
-                boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.15)}`
-              },
-              transition: 'all 0.3s ease'
+              mb: 6,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontWeight: 300,
+              letterSpacing: '0.02em'
             }}
           >
-            <TextField
-              fullWidth
-              placeholder="Buscar canciones, artistas, géneros..."
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  handleSearch();
-                }
-              }}
-              variant="standard"
-              slotProps={{
-                input: {
-                  disableUnderline: true,
-                  sx: { px: 2, fontSize: '1.1rem' }
-                }
-              }}
-            />
-            <IconButton
-              onClick={handleSearch}
+            La plataforma musical más avanzada del mundo
+          </Typography>
+
+          {/* 🔍 FUTURISTIC SEARCH BAR */}
+          <Box sx={{
+            maxWidth: 700,
+            mx: 'auto',
+            mb: 6,
+            position: 'relative'
+          }}>
+            <Paper
+              elevation={0}
               sx={{
-                backgroundColor: theme.palette.primary.main,
-                color: '#ffffff',
+                ...customStyles.glassCard,
+                p: 1,
+                display: 'flex',
+                alignItems: 'center',
+                background: 'rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 '&:hover': {
-                  backgroundColor: theme.palette.primary.dark,
-                  transform: 'scale(1.05)'
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 20px 60px rgba(168, 85, 247, 0.3)'
                 },
-                transition: 'all 0.2s ease'
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
               }}
             >
-              <SearchIcon />
-            </IconButton>
-          </Paper>
+              <TextField
+                fullWidth
+                placeholder="Descubre tu próxima canción favorita..."
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+                variant="standard"
+                slotProps={{
+                  input: {
+                    disableUnderline: true,
+                    sx: { 
+                      px: 3, 
+                      py: 1,
+                      fontSize: '1.2rem',
+                      color: 'white',
+                      '&::placeholder': {
+                        color: 'rgba(255,255,255,0.6)'
+                      }
+                    }
+                  }
+                }}
+              />
+              <IconButton
+                onClick={handleSearch}
+                sx={{
+                  ...customStyles.floatingButton,
+                  width: 56,
+                  height: 56,
+                  mx: 1
+                }}
+              >
+                <SearchIcon sx={{ fontSize: 24 }} />
+              </IconButton>
+            </Paper>
 
-          {/* Action Buttons */}
-          <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {/* Search suggestions floating */}
+            <Box sx={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              mt: 1,
+              display: 'flex',
+              gap: 1,
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              {['Rock', 'Jazz', 'Pop', 'Classical', 'Blues'].map((genre, index) => (
+                <Chip
+                  key={genre}
+                  label={genre}
+                  onClick={() => {
+                    setQuery(genre);
+                    setSearch(genre);
+                  }}
+                  sx={{
+                    ...customStyles.glassCard,
+                    animation: `slideUp 0.6s ease-out ${index * 0.1}s both`,
+                    '@keyframes slideUp': {
+                      '0%': { opacity: 0, transform: 'translateY(20px)' },
+                      '100%': { opacity: 1, transform: 'translateY(0)' }
+                    }
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+
+          {/* 🎯 ACTION BUTTONS WITH PREMIUM EFFECTS */}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={3}
+            justifyContent="center"
+            sx={{ mb: 8 }}
+          >
             <Button
               variant="contained"
               size="large"
               startIcon={<AddIcon />}
               onClick={() => navigate('/request')}
               sx={{
-                borderRadius: 3,
-                px: 4,
-                py: 1.5,
-                fontWeight: 600,
-                textTransform: 'none',
-                boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.3)}`
+                ...customStyles.floatingButton,
+                px: 6,
+                py: 2,
+                fontSize: '1.1rem',
+                background: colors.gradient.primary,
+                position: 'relative',
+                overflow: 'hidden',
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: '-100%',
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                  transition: 'left 0.6s',
+                },
+                '&:hover::after': {
+                  left: '100%',
+                }
               }}
             >
               Solicitar Canción
@@ -183,391 +314,314 @@ const HomePage = () => {
               startIcon={<MusicNoteIcon />}
               onClick={() => navigate('/upload')}
               sx={{
-                borderRadius: 3,
-                px: 4,
-                py: 1.5,
-                fontWeight: 600,
-                textTransform: 'none'
+                px: 6,
+                py: 2,
+                fontSize: '1.1rem',
+                borderRadius: '50px',
+                border: '2px solid rgba(255,255,255,0.3)',
+                background: 'rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(10px)',
+                color: 'white',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  border: `2px solid ${colors.secondary[400]}`,
+                  background: 'rgba(34, 211, 238, 0.15)',
+                  transform: 'translateY(-2px) scale(1.02)',
+                  boxShadow: '0 12px 40px rgba(34, 211, 238, 0.4)'
+                }
               }}
             >
               Subir Canción
             </Button>
-          </Box>
+          </Stack>
         </Box>
-      </Box>
 
-      {/* Stats Section */}
-      <Box sx={{ mb: 6 }}>
+        {/* 📊 PREMIUM STATS SECTION */}
         <Box sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-          gap: 3
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+          gap: 4,
+          mb: 8
         }}>
-          <Card sx={{
-            textAlign: 'center',
-            p: 3,
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-            color: '#ffffff'
-          }}>
-            <TrendingIcon sx={{ fontSize: 48, mb: 2 }} />
-            <Typography variant="h4" fontWeight="bold">{songs.length}</Typography>
-            <Typography variant="body1">Canciones Disponibles</Typography>
-          </Card>
-
-          <Card sx={{
-            textAlign: 'center',
-            p: 3,
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
-            color: '#ffffff'
-          }}>
-            <MusicNoteIcon sx={{ fontSize: 48, mb: 2 }} />
-            <Typography variant="h4" fontWeight="bold">
-              {songs.reduce((acc, song) => acc + (song.playsCount || 0), 0)}
-            </Typography>
-            <Typography variant="body1">Total Reproducciones</Typography>
-          </Card>
-
-          <Card sx={{
-            textAlign: 'center',
-            p: 3,
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-            color: '#ffffff'
-          }}>
-            <AlbumIcon sx={{ fontSize: 48, mb: 2 }} />
-            <Typography variant="h4" fontWeight="bold">
-              {new Set(songs.map(song => song.genreName)).size}
-            </Typography>
-            <Typography variant="body1">Géneros Musicales</Typography>
-          </Card>
-        </Box>
-      </Box>
-
-      {/* Top Songs Section */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
-          🎵 Canciones Más Vistas
-        </Typography>
-
-        {isLoadingTopSongs ? (
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' },
-            gap: 2
-          }}>
-            {[...Array(5)].map((_, index) => (
-              <Card key={index} sx={{ borderRadius: 2 }}>
-                <Skeleton variant="rectangular" height={120} />
-                <CardContent sx={{ p: 2 }}>
-                  <Skeleton variant="text" height={24} />
-                  <Skeleton variant="text" height={20} width="60%" />
-                </CardContent>
-              </Card>
-            ))}
-          </Box>
-        ) : (
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' },
-            gap: 2
-          }}>
-            {(topSongs || []).slice(0, 10).map((song, index) => (
+          {stats.map((stat, index) => (
+            <Box key={index}>
               <Card
-                key={song.songId}
                 sx={{
-                  borderRadius: 2,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}`
-                  }
-                }}
-                onClick={() => navigate(`/songs/${song.songId}`)}
-              >
-                <Box sx={{
-                  height: 120,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative'
-                }}>
-                  <MusicNoteIcon sx={{ fontSize: 40, color: '#ffffff', opacity: 0.8 }} />
-                  <Box sx={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    backgroundColor: 'rgba(255,255,255,0.9)',
-                    borderRadius: '50%',
-                    width: 24,
-                    height: 24,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <Typography variant="caption" fontWeight="bold" color="primary">
-                      {index + 1}
-                    </Typography>
-                  </Box>
-                </Box>
-                <CardContent sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" fontWeight="bold" noWrap>
-                    {song.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" noWrap>
-                    {song.artistName}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                    <PlayIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                    <Typography variant="caption" color="text.secondary">
-                      {song.playsCount} vistas
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
-          </Box>
-        )}
-      </Box>
-
-      {/* Top Artists Section */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
-          🎤 Artistas Más Vistos
-        </Typography>
-
-        {isLoadingTopArtists ? (
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' },
-            gap: 3
-          }}>
-            {[...Array(5)].map((_, index) => (
-              <Card key={index} sx={{ borderRadius: 3, p: 3, textAlign: 'center' }}>
-                <Skeleton variant="circular" width={80} height={80} sx={{ mx: 'auto', mb: 2 }} />
-                <Skeleton variant="text" height={24} />
-                <Skeleton variant="text" height={20} width="60%" sx={{ mx: 'auto' }} />
-              </Card>
-            ))}
-          </Box>
-        ) : (
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' },
-            gap: 3
-          }}>
-            {(topArtists || []).map((artist, index) => (
-              <Card
-                key={artist.authorId}
-                sx={{
-                  borderRadius: 3,
-                  p: 3,
+                  ...customStyles.glassCard,
+                  p: 4,
                   textAlign: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.15)}`
+                  background: stat.gradient,
+                  border: 'none',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  animation: `slideIn 0.8s ease-out ${index * 0.2}s both`,
+                  '@keyframes slideIn': {
+                    '0%': { opacity: 0, transform: 'translateY(30px)' },
+                    '100%': { opacity: 1, transform: 'translateY(0)' }
+                  },
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
                   }
                 }}
-                onClick={() => navigate(`/artists/${artist.authorId}`)}
               >
-                <Box sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mx: 'auto',
-                  mb: 2,
-                  position: 'relative'
-                }}>
-                  <MusicNoteIcon sx={{ fontSize: 32, color: '#ffffff' }} />
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
                   <Box sx={{
-                    position: 'absolute',
-                    top: -8,
-                    right: -8,
-                    backgroundColor: theme.palette.primary.main,
-                    color: '#ffffff',
-                    borderRadius: '50%',
-                    width: 24,
-                    height: 24,
+                    mb: 3,
+                    color: 'white',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    animation: 'bounce 2s ease-in-out infinite',
+                    '@keyframes bounce': {
+                      '0%, 100%': { transform: 'translateY(0)' },
+                      '50%': { transform: 'translateY(-10px)' }
+                    }
                   }}>
-                    <Typography variant="caption" fontWeight="bold">
-                      {index + 1}
-                    </Typography>
+                    {stat.icon}
                   </Box>
+                  <Typography 
+                    variant="h3" 
+                    fontWeight="900" 
+                    sx={{ 
+                      mb: 1, 
+                      color: 'white',
+                      textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    {stat.value}
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: 'rgba(255,255,255,0.9)',
+                      fontWeight: 500
+                    }}
+                  >
+                    {stat.label}
+                  </Typography>
                 </Box>
-                <Typography variant="h6" fontWeight="bold" noWrap>
-                  {artist.authorName}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {artist.totalSongs} canciones
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {artist.totalPlays} vistas totales
-                </Typography>
               </Card>
-            ))}
-          </Box>
-        )}
-      </Box>
-
-      {/* Songs Section */}
-      <Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" fontWeight="bold">
-            {search ? `Resultados para "${search}"` : 'Canciones Populares'}
-          </Typography>
-          <Button
-            variant="text"
-            onClick={() => navigate('/songs')}
-            sx={{ textTransform: 'none', fontWeight: 600 }}
-          >
-            Ver todas →
-          </Button>
+            </Box>
+          ))}
         </Box>
 
-        {isLoading ? (
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-            gap: 3
-          }}>
-            {[...Array(6)].map((_, index) => (
-              <Card key={index} sx={{ borderRadius: 3 }}>
-                <Skeleton variant="rectangular" height={200} />
-                <CardContent>
-                  <Skeleton variant="text" height={32} />
-                  <Skeleton variant="text" height={24} width="60%" />
-                </CardContent>
-              </Card>
-            ))}
-          </Box>
-        ) : (
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-            gap: 3
-          }}>
-            {songs.slice(0, 6).map((song, index) => (
-              <Fade key={song.songId} in={true} timeout={300 + index * 100}>
-                <Card sx={{
-                  borderRadius: 3,
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.15)}`
-                  }
-                }}>
-                  <Box sx={{
-                    height: 200,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}>
-                    <MusicNoteIcon sx={{ fontSize: 64, color: '#ffffff', opacity: 0.8 }} />
-                    <Box sx={{
-                      position: 'absolute',
-                      top: 16,
-                      right: 16,
-                      display: 'flex',
-                      gap: 1
-                    }}>
-                      <Chip
-                        label={song.genreName || 'Sin género'}
-                        size="small"
-                        sx={{
-                          backgroundColor: 'rgba(255,255,255,0.2)',
-                          color: '#ffffff',
-                          fontWeight: 500
-                        }}
-                      />
-                    </Box>
-                  </Box>
+        {/* 🎵 TOP SONGS SECTION */}
+        <Box sx={{ mb: 8 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              ...customStyles.gradientText,
+              mb: 6,
+              textAlign: 'center',
+              position: 'relative',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: -16,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 100,
+                height: 4,
+                background: colors.gradient.primary,
+                borderRadius: 2
+              }
+            }}
+          >
+            🎵 Éxitos del Momento
+          </Typography>
 
+          {isLoadingTopSongs ? (
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' },
+              gap: 3
+            }}>
+              {[...Array(10)].map((_, index) => (
+                <Card key={index} sx={{ ...customStyles.glassCard }}>
+                  <Skeleton variant="rectangular" height={160} />
                   <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
-                      {song.title || 'Sin título'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" gutterBottom noWrap>
-                      {song.artistName || 'Artista desconocido'}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <PlayIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                        <Typography variant="caption" color="text.secondary">
-                          {song.playsCount || 0}
+                    <Skeleton variant="text" height={28} />
+                    <Skeleton variant="text" height={24} width="70%" />
+                    <Skeleton variant="text" height={20} width="50%" />
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          ) : (
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' },
+              gap: 3
+            }}>
+              {(topSongs || []).slice(0, 10).map((song, index) => (
+                <Fade key={song.songId} in={true} timeout={400 + index * 100}>
+                  <Card
+                    sx={{
+                      ...customStyles.glassCard,
+                      cursor: 'pointer',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      animation: `slideUp 0.6s ease-out ${index * 0.1}s both`,
+                      '&:hover': {
+                        transform: 'translateY(-12px) scale(1.03)',
+                        boxShadow: '0 25px 70px rgba(168, 85, 247, 0.4)',
+                      },
+                      '@keyframes slideUp': {
+                        '0%': { opacity: 0, transform: 'translateY(30px)' },
+                        '100%': { opacity: 1, transform: 'translateY(0)' }
+                      }
+                    }}
+                    onClick={() => navigate(`/songs/${song.songId}`)}
+                  >
+                    <Box sx={{
+                      height: 160,
+                      background: `linear-gradient(135deg, ${colors.primary[500]} 0%, ${colors.secondary[400]} 100%)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      <MusicNoteIcon sx={{ 
+                        fontSize: 48, 
+                        color: 'white', 
+                        opacity: 0.8,
+                        animation: 'float 3s ease-in-out infinite'
+                      }} />
+                      
+                      {/* Ranking Badge */}
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 12,
+                        left: 12,
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }}>
+                        <Typography variant="caption" fontWeight="900" color="primary">
+                          #{index + 1}
                         </Typography>
                       </Box>
-                      {song.albumName && (
-                        <Chip
-                          label={song.albumName}
-                          size="small"
-                          variant="outlined"
-                          sx={{ fontSize: '0.7rem' }}
-                        />
-                      )}
+
+                      {/* Play Button Overlay */}
+                      <Box sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0,
+                        transition: 'all 0.3s ease',
+                        '&:hover': { opacity: 1 }
+                      }}>
+                        <IconButton
+                          sx={{
+                            background: colors.gradient.primary,
+                            color: 'white',
+                            width: 56,
+                            height: 56,
+                            '&:hover': {
+                              transform: 'scale(1.1)',
+                            }
+                          }}
+                        >
+                          <PlayIcon sx={{ fontSize: 28 }} />
+                        </IconButton>
+                      </Box>
                     </Box>
-                  </CardContent>
 
-                  <CardActions sx={{ px: 3, pb: 3, pt: 0 }}>
-                    <Button
-                      size="small"
-                      startIcon={<PlayIcon />}
-                      sx={{ textTransform: 'none' }}
-                    >
-                      Reproducir
-                    </Button>
-                    <IconButton size="small">
-                      <FavoriteIcon />
-                    </IconButton>
-                    <IconButton size="small">
-                      <ShareIcon />
-                    </IconButton>
-                  </CardActions>
-                </Card>
-              </Fade>
-            ))}
-          </Box>
-        )}
+                    <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+                      <Typography 
+                        variant="h6" 
+                        fontWeight="700" 
+                        noWrap 
+                        sx={{ 
+                          mb: 1,
+                          color: 'white',
+                          textShadow: '0 1px 2px rgba(0,0,0,0.3)' 
+                        }}
+                      >
+                        {song.title}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        noWrap 
+                        sx={{ 
+                          mb: 2,
+                          color: 'rgba(255,255,255,0.8)'
+                        }}
+                      >
+                        {song.artistName}
+                      </Typography>
+                      
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        color: 'rgba(255,255,255,0.7)'
+                      }}>
+                        <PlayIcon sx={{ fontSize: 16 }} />
+                        <Typography variant="caption">
+                          {song.playsCount?.toLocaleString()} vistas
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Fade>
+              ))}
+            </Box>
+          )}
+        </Box>
 
+        {/* Empty state for no results */}
         {songs.length === 0 && !isLoading && (
-          <Paper sx={{
-            p: 6,
+          <Card sx={{
+            ...customStyles.glassCard,
+            p: 8,
             textAlign: 'center',
-            borderRadius: 3,
-            backgroundColor: alpha(theme.palette.background.paper, 0.5)
+            background: 'rgba(255, 255, 255, 0.03)'
           }}>
-            <MusicNoteIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" gutterBottom>
+            <MusicNoteIcon sx={{ 
+              fontSize: 80, 
+              color: 'rgba(255,255,255,0.3)', 
+              mb: 3,
+              animation: 'pulse 2s ease-in-out infinite'
+            }} />
+            <Typography variant="h4" gutterBottom sx={{ color: 'white' }}>
               {search ? 'No se encontraron canciones' : 'No hay canciones disponibles'}
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+            <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.6)', mb: 4 }}>
               {search ? 'Intenta con otros términos de búsqueda' : 'Sé el primero en subir una canción'}
             </Typography>
             <Button
               variant="contained"
+              size="large"
               startIcon={<AddIcon />}
               onClick={() => navigate('/upload')}
-              sx={{ mt: 2, borderRadius: 2 }}
+              sx={{
+                ...customStyles.floatingButton,
+                px: 6,
+                py: 2
+              }}
             >
-              Subir Canción
+              Subir Tu Primera Canción
             </Button>
-          </Paper>
+          </Card>
         )}
-      </Box>
+
+      </Container>
     </Box>
   );
 };

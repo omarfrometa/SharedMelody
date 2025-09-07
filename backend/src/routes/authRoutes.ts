@@ -13,6 +13,14 @@ router.post('/register', authController.register);
 router.post('/logout', authController.logout);
 router.get('/me', authController.getMe);
 
+// Session management routes
+router.get('/sessions', authController.getSessions);
+router.delete('/sessions/:sessionId', authController.revokeSession);
+router.delete('/sessions', authController.revokeAllSessions);
+
+// OAuth provider management routes
+router.get('/oauth/providers', authController.getOAuthProviders);
+
 // Rutas de autenticación con Google
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
