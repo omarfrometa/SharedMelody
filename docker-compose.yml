@@ -7,32 +7,6 @@ version: '3.8'
 
 services:
   # =============================================
-  # POSTGRESQL DATABASE
-  # =============================================
-  postgres:
-    image: postgres:15-alpine
-    container_name: sharedmelody_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: sharedmelody_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_secure_password}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./database/initial_data.sql:/docker-entrypoint-initdb.d/02-initial_data.sql
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d sharedmelody_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - sharedmelody_network
-
-  # =============================================
   # REDIS (Session Store)
   # =============================================
   redis:
@@ -66,12 +40,12 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 3001
 
-      # Database Configuration
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: sharedmelody_db
-      DB_USER: postgres
-      DB_PASSWORD: ${DB_PASSWORD:-postgres_secure_password}
+      # Database Configuration (External PostgreSQL)
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-sharedmelody_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_POOL_MAX: 20
       DB_POOL_MIN: 0
       DB_IDLE_TIMEOUT: 10000
@@ -122,8 +96,6 @@ services:
       # Mount SSL certificates or keys if needed
       # - ./keys:/app/keys:ro
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -150,8 +122,6 @@ services:
 # VOLUMES
 # =============================================
 volumes:
-  postgres_data:
-    driver: local
   redis_data:
     driver: local
   backend_uploads:
