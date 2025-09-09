@@ -57,6 +57,11 @@ const HomePage = () => {
     queryFn: () => statsService.getTopSongs(10),
   });
 
+  const { data: topArtists, isLoading: isLoadingTopArtists } = useQuery<{artistName: string, songCount: number}[], Error>({
+    queryKey: ['topArtists'],
+    queryFn: () => songService.getTopArtists(5),
+  });
+
   const songs = songsResponse?.data || [];
 
   const handleSearch = () => setSearch(query);
@@ -113,23 +118,41 @@ const HomePage = () => {
               Artistas
             </Box>
             <List dense>
-              {['Legião Urbana', 'Caetano Veloso', 'Chico Buarque', 'Tom Jobim'].map((artist, index) => (
-                <ListItem key={artist} sx={{ ...customStyles.sidebarLink, cursor: 'pointer' }}>
-                  <ListItemIcon sx={{ minWidth: 36 }}>
-                    <PersonIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
-                  </ListItemIcon>
-                  <ListItemText primary={artist} />
-                  <Chip
-                    label={[142, 98, 87, 76][index]}
-                    size="small"
+              {isLoadingTopArtists ? (
+                [...Array(5)].map((_, index) => (
+                  <ListItem key={index} sx={{ ...customStyles.sidebarLink }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <PersonIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
+                    </ListItemIcon>
+                    <ListItemText primary="Cargando..." />
+                  </ListItem>
+                ))
+              ) : (
+                topArtists?.map((artist, index) => (
+                  <ListItem
+                    key={artist.artistName}
                     sx={{
-                      backgroundColor: colors.secondary[100],
-                      color: colors.secondary[600],
-                      fontSize: '0.75rem'
+                      ...customStyles.sidebarLink,
+                      cursor: 'pointer'
                     }}
-                  />
-                </ListItem>
-              ))}
+                    onClick={() => navigate(`/artist/${encodeURIComponent(artist.artistName)}`)}
+                  >
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <PersonIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
+                    </ListItemIcon>
+                    <ListItemText primary={artist.artistName} />
+                    <Chip
+                      label={artist.songCount}
+                      size="small"
+                      sx={{
+                        backgroundColor: colors.secondary[100],
+                        color: colors.secondary[600],
+                        fontSize: '0.75rem'
+                      }}
+                    />
+                  </ListItem>
+                ))
+              )}
             </List>
 
             <Divider />
@@ -167,10 +190,10 @@ const HomePage = () => {
               Aprende a tocar tus canciones favoritas
             </Typography>
             
-            <Box sx={{ maxWidth: 500, mx: 'auto', position: 'relative' }}>
+            <Box sx={{ maxWidth: 650, mx: 'auto', position: 'relative' }}>
               <TextField
                 fullWidth
-                placeholder="Busque por músicas ou artistas"
+                placeholder="Escribe la canción, artista, genero, etc..."
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={(event) => {
@@ -349,7 +372,7 @@ const HomePage = () => {
                     284K
                   </Typography>
                   <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
-                    Cifras
+                    Canciones
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
@@ -373,7 +396,7 @@ const HomePage = () => {
                     850K
                   </Typography>
                   <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
-                    Vídeos
+                    Visitas
                   </Typography>
                 </Box>
               </Box>

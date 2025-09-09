@@ -171,6 +171,34 @@ export const songService = {
     }
   },
 
+  // Obtener artistas con más canciones
+  async getTopArtists(limit: number = 5): Promise<{artistName: string, songCount: number}[]> {
+    try {
+      const response = await apiClient.get<PaginatedResponse<SongDetailed>>('/songs', {
+        params: { limit: 1000 } // Get many songs to calculate artist stats
+      });
+      
+      const songs = response.data.data || [];
+      
+      // Group songs by artist and count
+      const artistCounts = songs.reduce((acc, song) => {
+        const artist = song.artistName;
+        if (artist) {
+          acc[artist] = (acc[artist] || 0) + 1;
+        }
+        return acc;
+      }, {} as Record<string, number>);
+      
+      // Sort by song count and get top artists
+      return Object.entries(artistCounts)
+        .map(([artistName, songCount]) => ({ artistName, songCount }))
+        .sort((a, b) => b.songCount - a.songCount)
+        .slice(0, limit);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al obtener artistas principales');
+    }
+  },
+
   // Obtener canciones de un usuario
   async getUserSongs(userId: string, filters?: SongFilters): Promise<PaginatedResponse<SongDetailed>> {
     try {
