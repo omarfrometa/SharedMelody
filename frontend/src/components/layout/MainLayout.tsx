@@ -32,6 +32,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../contexts/LanguageContext';
 import { customStyles, colors } from '../../theme/theme';
 import LanguageSelector from '../common/LanguageSelector';
+import Breadcrumb from '../common/Breadcrumb';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -298,14 +299,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </MenuItem>
       </Menu>
 
+      {/* Breadcrumb Navigation */}
+      <Box sx={{ marginTop: '80px' }}>
+        <Breadcrumb />
+      </Box>
+
       {/* Main Content with CifraClub background */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          marginTop: '64px',
           minHeight: 'calc(100vh - 64px)',
-          backgroundColor: colors.secondary[50]
+          backgroundColor: colors.secondary[50],
+          paddingTop: 3
         }}
       >
         {children}
