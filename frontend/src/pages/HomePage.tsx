@@ -7,23 +7,32 @@ import {
   Card,
   CardContent,
   Chip,
-  Paper,
-  Fade,
-  Skeleton,
   Container,
-  Stack
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Divider,
+  Avatar,
+  Skeleton
 } from '@mui/material';
 import {
   Search as SearchIcon,
   PlayArrow as PlayIcon,
   Add as AddIcon,
   MusicNote as MusicNoteIcon,
-  GraphicEq as GraphicEqIcon,
-  Headphones as HeadphonesIcon,
-  Piano as PianoIcon,
-  Mic as MicIcon,
+  Share as ShareIcon,
+  Favorite as FavoriteIcon,
+  TrendingUp as TrendingUpIcon,
+  Star as StarIcon,
+  History as HistoryIcon,
+  AccessTime as AccessTimeIcon,
+  Person as PersonIcon,
+  Home as HomeIcon,
   LibraryMusic as LibraryMusicIcon,
-  Waves as WavesIcon
+  VideoLibrary as VideoLibraryIcon,
+  School as SchoolIcon,
+  Mic as MicIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -52,155 +61,116 @@ const HomePage = () => {
 
   const handleSearch = () => setSearch(query);
 
-  // Premium stats for the hero section
-  const stats = [
-    { 
-      icon: <LibraryMusicIcon sx={{ fontSize: 40 }} />,
-      value: songs.length.toLocaleString(),
-      label: 'Canciones Premium',
-      color: colors.music.melody,
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    },
-    { 
-      icon: <HeadphonesIcon sx={{ fontSize: 40 }} />,
-      value: songs.reduce((acc, song) => acc + (song.playsCount || 0), 0).toLocaleString(),
-      label: 'Reproducciones Totales',
-      color: colors.music.rhythm,
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-    },
-    { 
-      icon: <MicIcon sx={{ fontSize: 40 }} />,
-      value: new Set(songs.map(song => song.genreName)).size,
-      label: 'Géneros Únicos',
-      color: colors.music.harmony,
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-    }
-  ];
-
   return (
-    <Box sx={{
-      minHeight: '100vh',
-      background: colors.gradient.dark,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* 🌟 ANIMATED BACKGROUND PARTICLES */}
-      <Box sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `
-          radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.3) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(34, 211, 238, 0.3) 0%, transparent 50%),
-          radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.2) 0%, transparent 50%)
-        `,
-        animation: 'float 8s ease-in-out infinite',
-        '@keyframes float': {
-          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
-          '50%': { transform: 'translateY(-20px) rotate(180deg)' }
-        }
-      }} />
+    <Container maxWidth="xl" sx={{ py: 2 }}>
+      {/* CifraClub-style Layout */}
+      <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
+        {/* Left Sidebar - CifraClub style */}
+        <Box sx={{ flex: '0 0 auto', width: { xs: '100%', md: '300px' } }}>
+          <Box sx={{ ...customStyles.cleanCard, overflow: 'hidden' }}>
+            {/* Biblioteca Section */}
+            <Box sx={customStyles.sidebarSection}>
+              Biblioteca
+            </Box>
+            <List dense>
+              <ListItem
+                sx={{
+                  ...customStyles.sidebarLink,
+                  justifyContent: 'flex-start',
+                  cursor: 'pointer'
+                }}
+                className="active"
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <TrendingUpIcon sx={{ fontSize: 18, color: colors.primary[600] }} />
+                </ListItemIcon>
+                <ListItemText primary="Mais tocadas" />
+              </ListItem>
+              <ListItem sx={{ ...customStyles.sidebarLink, cursor: 'pointer' }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <FavoriteIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
+                </ListItemIcon>
+                <ListItemText primary="Favoritas" />
+              </ListItem>
+              <ListItem sx={{ ...customStyles.sidebarLink, cursor: 'pointer' }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <HistoryIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
+                </ListItemIcon>
+                <ListItemText primary="Histórico" />
+              </ListItem>
+              <ListItem sx={{ ...customStyles.sidebarLink, cursor: 'pointer' }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <AccessTimeIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
+                </ListItemIcon>
+                <ListItemText primary="Tocadas recentemente" />
+              </ListItem>
+            </List>
 
-      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2, py: 4 }}>
-        {/* 🚀 REVOLUTIONARY HERO SECTION */}
-        <Box sx={{
-          textAlign: 'center',
-          py: { xs: 8, md: 12 },
-          position: 'relative'
-        }}>
-          {/* Floating Music Icons */}
-          <Box sx={{
-            position: 'absolute',
-            top: '10%',
-            left: '10%',
-            animation: 'pulse 3s ease-in-out infinite',
-            '@keyframes pulse': {
-              '0%, 100%': { transform: 'scale(1)', opacity: 0.7 },
-              '50%': { transform: 'scale(1.2)', opacity: 1 }
-            }
-          }}>
-            <PianoIcon sx={{ fontSize: 40, color: colors.music.melody, opacity: 0.6 }} />
+            <Divider />
+
+            {/* Artistas Section */}
+            <Box sx={customStyles.sidebarSection}>
+              Artistas
+            </Box>
+            <List dense>
+              {['Legião Urbana', 'Caetano Veloso', 'Chico Buarque', 'Tom Jobim'].map((artist, index) => (
+                <ListItem key={artist} sx={{ ...customStyles.sidebarLink, cursor: 'pointer' }}>
+                  <ListItemIcon sx={{ minWidth: 36 }}>
+                    <PersonIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
+                  </ListItemIcon>
+                  <ListItemText primary={artist} />
+                  <Chip
+                    label={[142, 98, 87, 76][index]}
+                    size="small"
+                    sx={{
+                      backgroundColor: colors.secondary[100],
+                      color: colors.secondary[600],
+                      fontSize: '0.75rem'
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+
+            <Divider />
+
+            {/* Géneros Section */}
+            <Box sx={customStyles.sidebarSection}>
+              Géneros
+            </Box>
+            <List dense>
+              {['MPB', 'Rock Nacional', 'Sertanejo', 'Gospel', 'Pop Rock'].map((genre) => (
+                <ListItem key={genre} sx={{ ...customStyles.sidebarLink, cursor: 'pointer' }}>
+                  <ListItemIcon sx={{ minWidth: 36 }}>
+                    <MusicNoteIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
+                  </ListItemIcon>
+                  <ListItemText primary={genre} />
+                </ListItem>
+              ))}
+            </List>
           </Box>
-          <Box sx={{
-            position: 'absolute',
-            top: '20%',
-            right: '15%',
-            animation: 'pulse 4s ease-in-out infinite 1s',
-          }}>
-            <GraphicEqIcon sx={{ fontSize: 35, color: colors.music.rhythm, opacity: 0.6 }} />
-          </Box>
-          <Box sx={{
-            position: 'absolute',
-            bottom: '10%',
-            left: '20%',
-            animation: 'pulse 3.5s ease-in-out infinite 2s',
-          }}>
-            <WavesIcon sx={{ fontSize: 45, color: colors.music.bass, opacity: 0.6 }} />
-          </Box>
+        </Box>
 
-          {/* Main Title with Gradient Animation */}
-          <Typography
-            variant="h1"
-            component="h1"
-            gutterBottom
-            sx={{
-              ...customStyles.gradientText,
-              mb: 3,
-              textShadow: '0 4px 20px rgba(168, 85, 247, 0.3)',
-              animation: 'glow 2s ease-in-out infinite alternate',
-              '@keyframes glow': {
-                '0%': { textShadow: '0 4px 20px rgba(168, 85, 247, 0.3)' },
-                '100%': { textShadow: '0 8px 40px rgba(168, 85, 247, 0.6)' }
-              }
-            }}
-          >
-            SharedMelody
-          </Typography>
-
-          <Typography
-            variant="h4"
-            sx={{
-              mb: 6,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontWeight: 300,
-              letterSpacing: '0.02em'
-            }}
-          >
-            La plataforma musical más avanzada del mundo
-          </Typography>
-
-          {/* 🔍 FUTURISTIC SEARCH BAR */}
-          <Box sx={{
-            maxWidth: 700,
-            mx: 'auto',
-            mb: 6,
-            position: 'relative'
+        {/* Main Content */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {/* Hero Banner - CifraClub style */}
+          <Box sx={{ 
+            ...customStyles.heroGradient,
+            mb: 2,
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <Paper
-              elevation={0}
-              sx={{
-                ...customStyles.glassCard,
-                p: 1,
-                display: 'flex',
-                alignItems: 'center',
-                background: 'rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.12)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 20px 60px rgba(168, 85, 247, 0.3)'
-                },
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            >
+            <Typography variant="h3" fontWeight={800} sx={{ mb: 2 }}>
+              SharedMelody
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 3, opacity: 0.9 }}>
+              Aprende a tocar tus canciones favoritas
+            </Typography>
+            
+            <Box sx={{ maxWidth: 500, mx: 'auto', position: 'relative' }}>
               <TextField
                 fullWidth
-                placeholder="Descubre tu próxima canción favorita..."
+                placeholder="Busque por músicas ou artistas"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={(event) => {
@@ -208,18 +178,13 @@ const HomePage = () => {
                     handleSearch();
                   }
                 }}
-                variant="standard"
-                slotProps={{
-                  input: {
-                    disableUnderline: true,
-                    sx: { 
-                      px: 3, 
-                      py: 1,
-                      fontSize: '1.2rem',
-                      color: 'white',
-                      '&::placeholder': {
-                        color: 'rgba(255,255,255,0.6)'
-                      }
+                sx={{
+                  backgroundColor: 'white',
+                  borderRadius: '50px',
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '50px',
+                    '& fieldset': {
+                      border: 'none'
                     }
                   }
                 }}
@@ -227,402 +192,253 @@ const HomePage = () => {
               <IconButton
                 onClick={handleSearch}
                 sx={{
-                  ...customStyles.floatingButton,
-                  width: 56,
-                  height: 56,
-                  mx: 1
+                  position: 'absolute',
+                  right: 4,
+                  top: 4,
+                  backgroundColor: colors.primary[600],
+                  color: 'white',
+                  width: 48,
+                  height: 48,
+                  '&:hover': {
+                    backgroundColor: colors.primary[700],
+                    transform: 'scale(1.05)'
+                  }
                 }}
               >
-                <SearchIcon sx={{ fontSize: 24 }} />
+                <SearchIcon />
               </IconButton>
-            </Paper>
+            </Box>
+          </Box>
 
-            {/* Search suggestions floating */}
+          {/* Cifras mais acessadas */}
+          <Box sx={{ ...customStyles.cleanCard, overflow: 'hidden' }}>
             <Box sx={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              mt: 1,
+              ...customStyles.sidebarSection,
               display: 'flex',
-              gap: 1,
-              justifyContent: 'center',
-              flexWrap: 'wrap'
+              justifyContent: 'space-between',
+              alignItems: 'center'
             }}>
-              {['Rock', 'Jazz', 'Pop', 'Classical', 'Blues'].map((genre, index) => (
-                <Chip
-                  key={genre}
-                  label={genre}
-                  onClick={() => {
-                    setQuery(genre);
-                    setSearch(genre);
-                  }}
-                  sx={{
-                    ...customStyles.glassCard,
-                    animation: `slideUp 0.6s ease-out ${index * 0.1}s both`,
-                    '@keyframes slideUp': {
-                      '0%': { opacity: 0, transform: 'translateY(20px)' },
-                      '100%': { opacity: 1, transform: 'translateY(0)' }
-                    }
-                  }}
-                />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TrendingUpIcon sx={{ color: colors.primary[600] }} />
+                Cifras mais acessadas
+              </Box>
+              <Button size="small" sx={{ color: colors.primary[600] }}>
+                Ver todas
+              </Button>
+            </Box>
+
+            <List>
+              {isLoading ? (
+                [...Array(5)].map((_, index) => (
+                  <ListItem key={index}>
+                    <Skeleton variant="text" width="100%" height={60} />
+                  </ListItem>
+                ))
+              ) : (
+                songs.slice(0, 5).map((song, index) => (
+                  <ListItem 
+                    key={song.songId} 
+                    sx={{ 
+                      borderBottom: `1px solid ${colors.secondary[100]}`,
+                      '&:hover': { 
+                        backgroundColor: colors.secondary[50] 
+                      },
+                      '&:last-child': {
+                        borderBottom: 'none'
+                      }
+                    }}
+                  >
+                    <Box sx={{ 
+                      width: 24, 
+                      color: colors.primary[600], 
+                      fontWeight: 700, 
+                      mr: 2 
+                    }}>
+                      {index + 1}
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" fontWeight={600} sx={{ color: colors.secondary[800] }}>
+                        {song.title}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: colors.secondary[600] }}>
+                        {song.artistName}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <IconButton 
+                        size="small" 
+                        sx={{ 
+                          border: `1px solid ${colors.secondary[300]}`,
+                          '&:hover': { 
+                            backgroundColor: colors.primary[600],
+                            color: 'white',
+                            borderColor: colors.primary[600] 
+                          }
+                        }}
+                      >
+                        <PlayIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        sx={{ 
+                          border: `1px solid ${colors.secondary[300]}`,
+                          '&:hover': { 
+                            backgroundColor: colors.primary[600],
+                            color: 'white',
+                            borderColor: colors.primary[600] 
+                          }
+                        }}
+                      >
+                        <FavoriteIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        sx={{ 
+                          border: `1px solid ${colors.secondary[300]}`,
+                          '&:hover': { 
+                            backgroundColor: colors.primary[600],
+                            color: 'white',
+                            borderColor: colors.primary[600] 
+                          }
+                        }}
+                      >
+                        <ShareIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </ListItem>
+                ))
+              )}
+            </List>
+          </Box>
+        </Box>
+
+        {/* Right Sidebar */}
+        <Box sx={{ flex: '0 0 auto', width: { xs: '100%', md: '300px' } }}>
+          {/* Estadísticas */}
+          <Box sx={{ ...customStyles.cleanCard, mb: 2, overflow: 'hidden' }}>
+            <Box sx={customStyles.sidebarSection}>
+              Estatísticas
+            </Box>
+            <Box sx={{ p: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
+                  <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
+                    284K
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                    Cifras
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
+                  <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
+                    52K
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                    Artistas
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
+                  <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
+                    1.2M
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                    Usuários
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
+                  <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
+                    850K
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                    Vídeos
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Artistas em destaque */}
+          <Box sx={{ ...customStyles.cleanCard, mb: 2, overflow: 'hidden' }}>
+            <Box sx={customStyles.sidebarSection}>
+              Artistas em destaque
+            </Box>
+            <Box sx={{ p: 2 }}>
+              {['Legião Urbana', 'Caetano Veloso', 'Chico Buarque', 'Tom Jobim'].map((artist, index) => (
+                <Box key={artist} sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 2, 
+                  py: 1.5,
+                  borderBottom: index < 3 ? `1px solid ${colors.secondary[100]}` : 'none'
+                }}>
+                  <Avatar sx={{ 
+                    width: 40, 
+                    height: 40, 
+                    background: colors.gradient.primary,
+                    fontWeight: 600
+                  }}>
+                    {artist.split(' ').map(n => n[0]).join('')}
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ color: colors.secondary[800] }}>
+                      {artist}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                      {[142, 98, 87, 76][index]} cifras
+                    </Typography>
+                  </Box>
+                  <Button 
+                    size="small" 
+                    variant="outlined"
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      py: 0.5,
+                      px: 1.5,
+                      borderColor: colors.primary[600],
+                      color: colors.primary[600],
+                      '&:hover': {
+                        backgroundColor: colors.primary[600],
+                        color: 'white'
+                      }
+                    }}
+                  >
+                    Seguir
+                  </Button>
+                </Box>
               ))}
             </Box>
           </Box>
 
-          {/* 🎯 ACTION BUTTONS WITH PREMIUM EFFECTS */}
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={3}
-            justifyContent="center"
-            sx={{ mb: 8 }}
-          >
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<AddIcon />}
-              onClick={() => navigate('/request')}
-              sx={{
-                ...customStyles.floatingButton,
-                px: 6,
-                py: 2,
-                fontSize: '1.1rem',
-                background: colors.gradient.primary,
-                position: 'relative',
-                overflow: 'hidden',
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: '-100%',
-                  width: '100%',
-                  height: '100%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                  transition: 'left 0.6s',
-                },
-                '&:hover::after': {
-                  left: '100%',
-                }
-              }}
-            >
-              Solicitar Canción
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="large"
-              startIcon={<MusicNoteIcon />}
-              onClick={() => navigate('/upload')}
-              sx={{
-                px: 6,
-                py: 2,
-                fontSize: '1.1rem',
-                borderRadius: '50px',
-                border: '2px solid rgba(255,255,255,0.3)',
-                background: 'rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(10px)',
-                color: 'white',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': {
-                  border: `2px solid ${colors.secondary[400]}`,
-                  background: 'rgba(34, 211, 238, 0.15)',
-                  transform: 'translateY(-2px) scale(1.02)',
-                  boxShadow: '0 12px 40px rgba(34, 211, 238, 0.4)'
-                }
-              }}
-            >
-              Subir Canción
-            </Button>
-          </Stack>
-        </Box>
-
-        {/* 📊 PREMIUM STATS SECTION */}
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: 4,
-          mb: 8
-        }}>
-          {stats.map((stat, index) => (
-            <Box key={index}>
-              <Card
-                sx={{
-                  ...customStyles.glassCard,
-                  p: 4,
-                  textAlign: 'center',
-                  background: stat.gradient,
-                  border: 'none',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  animation: `slideIn 0.8s ease-out ${index * 0.2}s both`,
-                  '@keyframes slideIn': {
-                    '0%': { opacity: 0, transform: 'translateY(30px)' },
-                    '100%': { opacity: 1, transform: 'translateY(0)' }
-                  },
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                  }
-                }}
-              >
-                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Box sx={{
-                    mb: 3,
-                    color: 'white',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    animation: 'bounce 2s ease-in-out infinite',
-                    '@keyframes bounce': {
-                      '0%, 100%': { transform: 'translateY(0)' },
-                      '50%': { transform: 'translateY(-10px)' }
-                    }
-                  }}>
-                    {stat.icon}
-                  </Box>
-                  <Typography 
-                    variant="h3" 
-                    fontWeight="900" 
-                    sx={{ 
-                      mb: 1, 
-                      color: 'white',
-                      textShadow: '0 2px 10px rgba(0,0,0,0.3)'
-                    }}
-                  >
-                    {stat.value}
-                  </Typography>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      color: 'rgba(255,255,255,0.9)',
-                      fontWeight: 500
-                    }}
-                  >
-                    {stat.label}
-                  </Typography>
-                </Box>
-              </Card>
+          {/* Tags populares */}
+          <Box sx={{ ...customStyles.cleanCard, overflow: 'hidden' }}>
+            <Box sx={customStyles.sidebarSection}>
+              Tags populares
             </Box>
-          ))}
-        </Box>
-
-        {/* 🎵 TOP SONGS SECTION */}
-        <Box sx={{ mb: 8 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              ...customStyles.gradientText,
-              mb: 6,
-              textAlign: 'center',
-              position: 'relative',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: -16,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: 100,
-                height: 4,
-                background: colors.gradient.primary,
-                borderRadius: 2
-              }
-            }}
-          >
-            🎵 Éxitos del Momento
-          </Typography>
-
-          {isLoadingTopSongs ? (
-            <Box sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' },
-              gap: 3
-            }}>
-              {[...Array(10)].map((_, index) => (
-                <Card key={index} sx={{ ...customStyles.glassCard }}>
-                  <Skeleton variant="rectangular" height={160} />
-                  <CardContent sx={{ p: 3 }}>
-                    <Skeleton variant="text" height={28} />
-                    <Skeleton variant="text" height={24} width="70%" />
-                    <Skeleton variant="text" height={20} width="50%" />
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
-          ) : (
-            <Box sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' },
-              gap: 3
-            }}>
-              {(topSongs || []).slice(0, 10).map((song, index) => (
-                <Fade key={song.songId} in={true} timeout={400 + index * 100}>
-                  <Card
+            <Box sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {['rock nacional', 'mpb', 'sertanejo', 'gospel', 'pop rock', 'bossa nova', 'blues', 'country', 'forró', 'reggae'].map((tag) => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    size="small"
                     sx={{
-                      ...customStyles.glassCard,
-                      cursor: 'pointer',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      animation: `slideUp 0.6s ease-out ${index * 0.1}s both`,
+                      backgroundColor: colors.secondary[100],
+                      color: colors.secondary[700],
+                      fontSize: '0.75rem',
                       '&:hover': {
-                        transform: 'translateY(-12px) scale(1.03)',
-                        boxShadow: '0 25px 70px rgba(168, 85, 247, 0.4)',
-                      },
-                      '@keyframes slideUp': {
-                        '0%': { opacity: 0, transform: 'translateY(30px)' },
-                        '100%': { opacity: 1, transform: 'translateY(0)' }
+                        backgroundColor: colors.primary[50],
+                        color: colors.primary[700],
+                        cursor: 'pointer'
                       }
                     }}
-                    onClick={() => navigate(`/songs/${song.songId}`)}
-                  >
-                    <Box sx={{
-                      height: 160,
-                      background: `linear-gradient(135deg, ${colors.primary[500]} 0%, ${colors.secondary[400]} 100%)`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}>
-                      <MusicNoteIcon sx={{ 
-                        fontSize: 48, 
-                        color: 'white', 
-                        opacity: 0.8,
-                        animation: 'float 3s ease-in-out infinite'
-                      }} />
-                      
-                      {/* Ranking Badge */}
-                      <Box sx={{
-                        position: 'absolute',
-                        top: 12,
-                        left: 12,
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        background: 'rgba(255,255,255,0.9)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                      }}>
-                        <Typography variant="caption" fontWeight="900" color="primary">
-                          #{index + 1}
-                        </Typography>
-                      </Box>
-
-                      {/* Play Button Overlay */}
-                      <Box sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.4)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        opacity: 0,
-                        transition: 'all 0.3s ease',
-                        '&:hover': { opacity: 1 }
-                      }}>
-                        <IconButton
-                          sx={{
-                            background: colors.gradient.primary,
-                            color: 'white',
-                            width: 56,
-                            height: 56,
-                            '&:hover': {
-                              transform: 'scale(1.1)',
-                            }
-                          }}
-                        >
-                          <PlayIcon sx={{ fontSize: 28 }} />
-                        </IconButton>
-                      </Box>
-                    </Box>
-
-                    <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
-                      <Typography 
-                        variant="h6" 
-                        fontWeight="700" 
-                        noWrap 
-                        sx={{ 
-                          mb: 1,
-                          color: 'white',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.3)' 
-                        }}
-                      >
-                        {song.title}
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
-                        noWrap 
-                        sx={{ 
-                          mb: 2,
-                          color: 'rgba(255,255,255,0.8)'
-                        }}
-                      >
-                        {song.artistName}
-                      </Typography>
-                      
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 1,
-                        color: 'rgba(255,255,255,0.7)'
-                      }}>
-                        <PlayIcon sx={{ fontSize: 16 }} />
-                        <Typography variant="caption">
-                          {song.playsCount?.toLocaleString()} vistas
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Fade>
-              ))}
+                  />
+                ))}
+              </Box>
             </Box>
-          )}
+          </Box>
         </Box>
-
-        {/* Empty state for no results */}
-        {songs.length === 0 && !isLoading && (
-          <Card sx={{
-            ...customStyles.glassCard,
-            p: 8,
-            textAlign: 'center',
-            background: 'rgba(255, 255, 255, 0.03)'
-          }}>
-            <MusicNoteIcon sx={{ 
-              fontSize: 80, 
-              color: 'rgba(255,255,255,0.3)', 
-              mb: 3,
-              animation: 'pulse 2s ease-in-out infinite'
-            }} />
-            <Typography variant="h4" gutterBottom sx={{ color: 'white' }}>
-              {search ? 'No se encontraron canciones' : 'No hay canciones disponibles'}
-            </Typography>
-            <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.6)', mb: 4 }}>
-              {search ? 'Intenta con otros términos de búsqueda' : 'Sé el primero en subir una canción'}
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<AddIcon />}
-              onClick={() => navigate('/upload')}
-              sx={{
-                ...customStyles.floatingButton,
-                px: 6,
-                py: 2
-              }}
-            >
-              Subir Tu Primera Canción
-            </Button>
-          </Card>
-        )}
-
-      </Container>
-    </Box>
+      </Box>
+    </Container>
   );
 };
 

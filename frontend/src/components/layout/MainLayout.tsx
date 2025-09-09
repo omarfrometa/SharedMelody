@@ -67,77 +67,83 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* AppBar */}
-      <AppBar 
-        position="fixed" 
+      {/* CifraClub-style Header */}
+      <AppBar
+        position="fixed"
         sx={{
-          ...customStyles.glassCard,
-          background: 'rgba(15, 15, 35, 0.8)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          backgroundColor: '#ffffff',
+          borderBottom: `1px solid ${colors.secondary[200]}`,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          color: colors.secondary[800],
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography 
-            variant="h6" 
-            component="div" 
-            onClick={() => navigate('/')}
-            sx={{ 
-              ...customStyles.gradientText,
-              fontWeight: 800,
-              cursor: 'pointer',
-              '&:hover': {
-                transform: 'scale(1.05)'
-              },
-              transition: 'transform 0.2s ease'
-            }}
-          >
-            SharedMelody
-          </Typography>
+        <Toolbar sx={{ justifyContent: 'space-between', maxWidth: 1200, width: '100%', mx: 'auto' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Typography
+              variant="h6"
+              component="div"
+              onClick={() => navigate('/')}
+              sx={{
+                ...customStyles.primaryText,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                '&:hover': {
+                  transform: 'scale(1.02)'
+                },
+                transition: 'transform 0.2s ease'
+              }}
+            >
+              <MusicNoteIcon />
+              SharedMelody
+            </Typography>
 
-          {/* Desktop Navigation */}
-          {!isMobile && (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {navigationItems.map((item) => (
-                <Button
-                  key={item.path}
-                  startIcon={item.icon}
-                  onClick={() => navigate(item.path)}
-                  sx={{
-                    color: 'white',
-                    backgroundColor: location.pathname === item.path 
-                      ? 'rgba(168, 85, 247, 0.2)' 
-                      : 'transparent',
-                    border: location.pathname === item.path 
-                      ? '1px solid rgba(168, 85, 247, 0.5)'
-                      : '1px solid transparent',
-                    borderRadius: '20px',
-                    px: 3,
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      transform: 'translateY(-1px)',
-                    },
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  {item.label}
-                </Button>
-              ))}
-            </Box>
-          )}
+            {/* Desktop Navigation - CifraClub style */}
+            {!isMobile && (
+              <Box sx={{ display: 'flex', gap: 0 }}>
+                {navigationItems.map((item) => (
+                  <Button
+                    key={item.path}
+                    startIcon={item.icon}
+                    onClick={() => navigate(item.path)}
+                    sx={{
+                      color: location.pathname === item.path ? colors.primary[600] : colors.secondary[500],
+                      borderBottom: location.pathname === item.path
+                        ? `3px solid ${colors.primary[600]}`
+                        : '3px solid transparent',
+                      borderRadius: 0,
+                      px: 2,
+                      py: 2.5,
+                      fontWeight: 500,
+                      '&:hover': {
+                        color: colors.primary[600],
+                        backgroundColor: 'transparent',
+                        borderBottomColor: colors.primary[600],
+                      },
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </Box>
+            )}
+          </Box>
 
-          {/* User Actions */}
+          {/* User Actions - Clean style */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {isAuthenticated ? (
               <>
                 <Tooltip title="Mensajes">
-                  <IconButton 
+                  <IconButton
                     onClick={() => navigate('/messages')}
-                    sx={{ 
-                      color: 'white',
-                      '&:hover': { 
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                        transform: 'scale(1.1)'
+                    sx={{
+                      color: colors.secondary[500],
+                      '&:hover': {
+                        color: colors.primary[600],
+                        backgroundColor: colors.primary[50]
                       }
                     }}
                   >
@@ -146,13 +152,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </Tooltip>
 
                 <Tooltip title="Favoritos">
-                  <IconButton 
+                  <IconButton
                     onClick={() => navigate('/favorites')}
-                    sx={{ 
-                      color: 'white',
-                      '&:hover': { 
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                        transform: 'scale(1.1)'
+                    sx={{
+                      color: colors.secondary[500],
+                      '&:hover': {
+                        color: colors.primary[600],
+                        backgroundColor: colors.primary[50]
                       }
                     }}
                   >
@@ -162,13 +168,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
                 {hasRole('admin') && (
                   <Tooltip title="Admin">
-                    <IconButton 
+                    <IconButton
                       onClick={() => navigate('/admin')}
-                      sx={{ 
-                        color: colors.secondary[400],
-                        '&:hover': { 
-                          backgroundColor: 'rgba(34, 211, 238, 0.1)',
-                          transform: 'scale(1.1)'
+                      sx={{
+                        color: colors.secondary[500],
+                        '&:hover': {
+                          color: colors.primary[600],
+                          backgroundColor: colors.primary[50]
                         }
                       }}
                     >
@@ -179,21 +185,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
                 <IconButton
                   onClick={handleUserMenuOpen}
-                  sx={{ 
+                  sx={{
                     p: 0,
                     ml: 1,
-                    border: '2px solid rgba(255,255,255,0.2)',
                     '&:hover': {
-                      border: '2px solid rgba(168, 85, 247, 0.8)',
                       transform: 'scale(1.05)'
                     },
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  <Avatar 
-                    src={user?.profilePictureUrl || user?.avatarUrl} 
-                    sx={{ 
-                      width: 36, 
+                  <Avatar
+                    src={user?.profilePictureUrl || user?.avatarUrl}
+                    sx={{
+                      width: 36,
                       height: 36,
                       background: colors.gradient.primary
                     }}
@@ -205,30 +209,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             ) : (
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
-                  variant="outlined"
                   onClick={() => navigate('/login')}
                   sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    borderRadius: '20px',
+                    color: colors.secondary[600],
+                    border: `1px solid ${colors.secondary[300]}`,
+                    borderRadius: '6px',
+                    px: 2,
+                    py: 1,
                     '&:hover': {
-                      borderColor: 'rgba(168, 85, 247, 0.8)',
-                      backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                      backgroundColor: colors.secondary[50],
+                      borderColor: colors.primary[600],
+                      color: colors.primary[600]
                     }
                   }}
                 >
-                  Iniciar Sesión
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => navigate('/register')}
-                  sx={{
-                    ...customStyles.floatingButton,
-                    borderRadius: '20px',
-                    px: 3
-                  }}
-                >
-                  Registrarse
+                  Entrar
                 </Button>
               </Box>
             )}
@@ -236,55 +231,57 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </Toolbar>
       </AppBar>
 
-      {/* User Menu */}
+      {/* User Menu - Clean style */}
       <Menu
         anchorEl={userMenuAnchor}
         open={Boolean(userMenuAnchor)}
         onClose={handleUserMenuClose}
         sx={{
           '& .MuiPaper-root': {
-            ...customStyles.glassCard,
-            background: 'rgba(15, 15, 35, 0.95)',
-            color: 'white',
+            ...customStyles.cleanCard,
             minWidth: 200,
             mt: 1
           }
         }}
       >
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             handleUserMenuClose();
             navigate('/profile');
           }}
-          sx={{ 
-            '&:hover': { 
-              backgroundColor: 'rgba(255,255,255,0.1)' 
+          sx={{
+            color: colors.secondary[700],
+            '&:hover': {
+              backgroundColor: colors.primary[50],
+              color: colors.primary[700]
             }
           }}
         >
           <PersonIcon sx={{ mr: 2 }} />
           Mi Perfil
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             handleUserMenuClose();
             navigate('/settings');
           }}
-          sx={{ 
-            '&:hover': { 
-              backgroundColor: 'rgba(255,255,255,0.1)' 
+          sx={{
+            color: colors.secondary[700],
+            '&:hover': {
+              backgroundColor: colors.primary[50],
+              color: colors.primary[700]
             }
           }}
         >
           <SettingsIcon sx={{ mr: 2 }} />
           Configuración
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={handleLogout}
-          sx={{ 
+          sx={{
             color: colors.music.beat,
-            '&:hover': { 
-              backgroundColor: 'rgba(255,107,107,0.1)' 
+            '&:hover': {
+              backgroundColor: 'rgba(220, 53, 69, 0.1)'
             }
           }}
         >
@@ -293,14 +290,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </MenuItem>
       </Menu>
 
-      {/* Main Content */}
+      {/* Main Content with CifraClub background */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           marginTop: '64px',
           minHeight: 'calc(100vh - 64px)',
-          background: colors.gradient.dark
+          backgroundColor: colors.secondary[50]
         }}
       >
         {children}

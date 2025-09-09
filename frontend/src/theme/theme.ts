@@ -1,37 +1,37 @@
 import { createTheme } from '@mui/material/styles';
 
-// 🎨 ULTRA-MODERN MUSIC PLATFORM COLOR PALETTE
-// Inspirado en Spotify, Apple Music y las mejores plataformas musicales
+// 🎸 CIFRACLUB-INSPIRED COLOR PALETTE
+// Basado en la estructura limpia y funcional de CifraClub
 const colors = {
-  // 🎵 Primary: Deep Musical Purple with Neon Accents
+  // 🎵 Primary: Clean Green (como CifraClub pero verde)
   primary: {
-    50: '#faf5ff',
-    100: '#f3e8ff',
-    200: '#e9d5ff',
-    300: '#d8b4fe',
-    400: '#c084fc',
-    500: '#a855f7',
-    600: '#9333ea',
-    700: '#7c2d12',
-    800: '#6b21a8',
-    900: '#581c87',
-    950: '#3b0764',
+    50: '#f0fdf4',
+    100: '#dcfce7',
+    200: '#bbf7d0',
+    300: '#86efac',
+    400: '#4ade80',
+    500: '#22c55e', // Verde principal
+    600: '#16a34a',
+    700: '#15803d',
+    800: '#166534',
+    900: '#14532d',
+    950: '#052e16',
   },
-  // 🌟 Secondary: Electric Cyan/Teal
+  // 🌟 Secondary: Neutral grays for clean interface
   secondary: {
-    50: '#ecfeff',
-    100: '#cffafe',
-    200: '#a5f3fc',
-    300: '#67e8f9',
-    400: '#22d3ee',
-    500: '#06b6d4',
-    600: '#0891b2',
-    700: '#0e7490',
-    800: '#155e75',
-    900: '#164e63',
-    950: '#083344',
+    50: '#f8f9fa',
+    100: '#e9ecef',
+    200: '#dee2e6',
+    300: '#ced4da',
+    400: '#adb5bd',
+    500: '#6c757d',
+    600: '#495057',
+    700: '#343a40',
+    800: '#212529',
+    900: '#0d1117',
+    950: '#010409',
   },
-  // ⚡ Accent: Electric Lime/Yellow
+  // ⚡ Accent: Supporting colors
   accent: {
     50: '#fefce8',
     100: '#fef9c3',
@@ -45,36 +45,36 @@ const colors = {
     900: '#713f12',
     950: '#422006',
   },
-  // 🎭 Gradient Colors for Advanced Effects
+  // 🎭 Simple gradients for CifraClub style
   gradient: {
-    primary: 'linear-gradient(135deg, #a855f7 0%, #ec4899 25%, #06b6d4 50%, #10b981 75%, #f59e0b 100%)',
-    secondary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    accent: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    dark: 'linear-gradient(135deg, #0f0f23 0%, #2d1b69 100%)',
-    glass: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+    primary: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+    secondary: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+    accent: 'linear-gradient(135deg, #22c55e 0%, #20c997 100%)',
+    dark: '#f8f9fa',
+    glass: 'rgba(255,255,255,0.1)',
   },
-  // 🌌 Dark Theme Colors
-  dark: {
-    50: '#fafafa',
-    100: '#f5f5f5',
-    200: '#e5e5e5',
-    300: '#d4d4d4',
-    400: '#a3a3a3',
-    500: '#737373',
-    600: '#525252',
-    700: '#404040',
-    800: '#262626',
-    900: '#171717',
-    950: '#0a0a0a',
+  // 🌌 Light theme colors (CifraClub uses light theme)
+  light: {
+    50: '#ffffff',
+    100: '#f8f9fa',
+    200: '#e9ecef',
+    300: '#dee2e6',
+    400: '#ced4da',
+    500: '#adb5bd',
+    600: '#6c757d',
+    700: '#495057',
+    800: '#343a40',
+    900: '#212529',
+    950: '#0d1117',
   },
-  // 🎨 Music-specific Colors
+  // 🎨 Music-specific colors adapted to clean style
   music: {
-    beat: '#ff6b6b',
-    rhythm: '#4ecdc4',
-    melody: '#45b7d1',
-    harmony: '#96ceb4',
-    bass: '#feca57',
-    treble: '#ff9ff3',
+    beat: '#dc3545',
+    rhythm: '#17a2b8',
+    melody: '#007bff',
+    harmony: '#28a745',
+    bass: '#ffc107',
+    treble: '#6f42c1',
   }
 };
 
@@ -96,33 +96,33 @@ const neumorphismDark = {
   boxShadow: '20px 20px 60px #1a1a2e, -20px -20px 60px #3e3e7a',
 };
 
-// 🚀 REVOLUTIONARY MUSIC PLATFORM THEME
+// 🎸 CIFRACLUB-INSPIRED CLEAN THEME
 export const theme = createTheme({
   palette: {
-    mode: 'dark', // Starting with dark theme for that premium feel
+    mode: 'light', // CifraClub uses light theme
     primary: {
-      main: colors.primary[500],
-      light: colors.primary[300],
+      main: colors.primary[600], // #16a34a
+      light: colors.primary[500],
       dark: colors.primary[700],
       contrastText: '#ffffff',
     },
     secondary: {
-      main: colors.secondary[400],
+      main: colors.secondary[500], // #6c757d
       light: colors.secondary[300],
-      dark: colors.secondary[600],
+      dark: colors.secondary[700],
       contrastText: '#ffffff',
     },
     success: {
-      main: colors.music.harmony,
-      light: colors.music.melody,
-      dark: colors.music.bass,
+      main: colors.primary[600],
+      light: colors.primary[400],
+      dark: colors.primary[800],
       contrastText: '#ffffff',
     },
     warning: {
-      main: colors.accent[400],
+      main: colors.accent[500],
       light: colors.accent[300],
-      dark: colors.accent[600],
-      contrastText: '#000000',
+      dark: colors.accent[700],
+      contrastText: '#ffffff',
     },
     error: {
       main: colors.music.beat,
@@ -131,290 +131,278 @@ export const theme = createTheme({
       contrastText: '#ffffff',
     },
     background: {
-      default: 'linear-gradient(135deg, #0f0f23 0%, #2d1b69 100%)',
-      paper: 'rgba(255, 255, 255, 0.05)',
+      default: colors.secondary[50], // #f8f9fa
+      paper: '#ffffff',
     },
     text: {
-      primary: '#ffffff',
-      secondary: 'rgba(255, 255, 255, 0.7)',
+      primary: colors.secondary[800], // #212529
+      secondary: colors.secondary[500], // #6c757d
     },
-    divider: 'rgba(255, 255, 255, 0.1)',
+    divider: colors.secondary[200], // #dee2e6
   },
   typography: {
-    fontFamily: '"Space Grotesk", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif',
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     h1: {
-      fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-      fontWeight: 900,
-      lineHeight: 1.1,
-      letterSpacing: '-0.05em',
-      background: colors.gradient.primary,
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-    },
-    h2: {
-      fontSize: 'clamp(2rem, 4vw, 3rem)',
+      fontSize: '2.5rem',
       fontWeight: 800,
       lineHeight: 1.2,
-      letterSpacing: '-0.03em',
+      color: colors.primary[600],
     },
-    h3: {
-      fontSize: 'clamp(1.75rem, 3vw, 2.5rem)',
+    h2: {
+      fontSize: '2rem',
       fontWeight: 700,
       lineHeight: 1.3,
-      letterSpacing: '-0.02em',
+      color: colors.secondary[800],
     },
-    h4: {
-      fontSize: 'clamp(1.5rem, 2.5vw, 2rem)',
+    h3: {
+      fontSize: '1.75rem',
       fontWeight: 600,
       lineHeight: 1.4,
+      color: colors.secondary[800],
+    },
+    h4: {
+      fontSize: '1.5rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
+      color: colors.secondary[700],
     },
     h5: {
-      fontSize: 'clamp(1.25rem, 2vw, 1.5rem)',
+      fontSize: '1.25rem',
       fontWeight: 600,
       lineHeight: 1.5,
+      color: colors.secondary[700],
     },
     h6: {
-      fontSize: 'clamp(1.125rem, 1.5vw, 1.25rem)',
+      fontSize: '1.125rem',
       fontWeight: 600,
       lineHeight: 1.5,
+      color: colors.secondary[700],
     },
     body1: {
       fontSize: '1rem',
-      lineHeight: 1.7,
+      lineHeight: 1.5,
       fontWeight: 400,
+      color: colors.secondary[800],
     },
     body2: {
       fontSize: '0.875rem',
-      lineHeight: 1.6,
+      lineHeight: 1.5,
       fontWeight: 400,
+      color: colors.secondary[700],
     },
     button: {
-      fontWeight: 600,
+      fontWeight: 500,
       textTransform: 'none',
-      letterSpacing: '0.01em',
+      fontSize: '0.9rem',
     },
   },
   shape: {
-    borderRadius: 20,
+    borderRadius: 8, // CifraClub uses smaller border radius
   },
   shadows: [
     'none',
-    '0 2px 8px rgba(168, 85, 247, 0.15)',
-    '0 4px 12px rgba(168, 85, 247, 0.15)',
-    '0 8px 24px rgba(168, 85, 247, 0.15)',
-    '0 12px 32px rgba(168, 85, 247, 0.18)',
-    '0 16px 40px rgba(168, 85, 247, 0.2)',
-    '0 20px 48px rgba(168, 85, 247, 0.22)',
-    '0 24px 56px rgba(168, 85, 247, 0.25)',
-    // Enhanced shadows continue...
-    '0 28px 64px rgba(168, 85, 247, 0.3)',
-    '0 32px 72px rgba(168, 85, 247, 0.35)',
-    '0 36px 80px rgba(168, 85, 247, 0.4)',
-    '0 40px 88px rgba(168, 85, 247, 0.45)',
-    '0 44px 96px rgba(168, 85, 247, 0.5)',
-    '0 48px 104px rgba(168, 85, 247, 0.55)',
-    '0 52px 112px rgba(168, 85, 247, 0.6)',
-    '0 56px 120px rgba(168, 85, 247, 0.65)',
-    '0 60px 128px rgba(168, 85, 247, 0.7)',
-    '0 64px 136px rgba(168, 85, 247, 0.75)',
-    '0 68px 144px rgba(168, 85, 247, 0.8)',
-    '0 72px 152px rgba(168, 85, 247, 0.85)',
-    '0 76px 160px rgba(168, 85, 247, 0.9)',
-    '0 80px 168px rgba(168, 85, 247, 0.95)',
-    '0 84px 176px rgba(168, 85, 247, 1.0)',
-    '0 88px 184px rgba(168, 85, 247, 1.0)',
-    '0 92px 192px rgba(168, 85, 247, 1.0)',
+    '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
+    '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
+    '0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)',
+    '0 5px 10px rgba(0,0,0,0.12), 0 3px 6px rgba(0,0,0,0.08)',
+    '0 6px 12px rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.10)',
+    '0 8px 16px rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.10)',
+    '0 10px 20px rgba(0,0,0,0.15), 0 8px 16px rgba(0,0,0,0.10)',
+    '0 12px 24px rgba(0,0,0,0.15), 0 10px 20px rgba(0,0,0,0.10)',
+    '0 14px 28px rgba(0,0,0,0.15), 0 12px 24px rgba(0,0,0,0.10)',
+    '0 16px 32px rgba(0,0,0,0.15), 0 14px 28px rgba(0,0,0,0.10)',
+    '0 18px 36px rgba(0,0,0,0.15), 0 16px 32px rgba(0,0,0,0.10)',
+    '0 20px 40px rgba(0,0,0,0.15), 0 18px 36px rgba(0,0,0,0.10)',
+    '0 22px 44px rgba(0,0,0,0.15), 0 20px 40px rgba(0,0,0,0.10)',
+    '0 24px 48px rgba(0,0,0,0.15), 0 22px 44px rgba(0,0,0,0.10)',
+    '0 26px 52px rgba(0,0,0,0.15), 0 24px 48px rgba(0,0,0,0.10)',
+    '0 28px 56px rgba(0,0,0,0.15), 0 26px 52px rgba(0,0,0,0.10)',
+    '0 30px 60px rgba(0,0,0,0.15), 0 28px 56px rgba(0,0,0,0.10)',
+    '0 32px 64px rgba(0,0,0,0.15), 0 30px 60px rgba(0,0,0,0.10)',
+    '0 34px 68px rgba(0,0,0,0.15), 0 32px 64px rgba(0,0,0,0.10)',
+    '0 36px 72px rgba(0,0,0,0.15), 0 34px 68px rgba(0,0,0,0.10)',
+    '0 38px 76px rgba(0,0,0,0.15), 0 36px 72px rgba(0,0,0,0.10)',
+    '0 40px 80px rgba(0,0,0,0.15), 0 38px 76px rgba(0,0,0,0.10)',
+    '0 42px 84px rgba(0,0,0,0.15), 0 40px 80px rgba(0,0,0,0.10)',
+    '0 44px 88px rgba(0,0,0,0.15), 0 42px 84px rgba(0,0,0,0.10)',
   ],
   components: {
-    // 🎯 REVOLUTIONARY BUTTON DESIGN
+    // 🎯 CIFRACLUB BUTTON STYLE
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 25,
+          borderRadius: 6,
           textTransform: 'none',
-          fontWeight: 600,
-          padding: '12px 32px',
-          fontSize: '0.95rem',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: '-100%',
-            width: '100%',
-            height: '100%',
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-            transition: 'left 0.6s',
-          },
-          '&:hover::before': {
-            left: '100%',
-          },
+          fontWeight: 500,
+          padding: '8px 16px',
+          fontSize: '0.9rem',
+          transition: 'all 0.2s ease',
         },
         contained: {
-          background: colors.gradient.primary,
-          boxShadow: '0 8px 32px rgba(168, 85, 247, 0.4)',
+          backgroundColor: colors.primary[600],
+          color: '#ffffff',
+          boxShadow: '0 2px 4px rgba(22, 163, 74, 0.2)',
           '&:hover': {
-            transform: 'translateY(-2px) scale(1.02)',
-            boxShadow: '0 12px 40px rgba(168, 85, 247, 0.6)',
+            backgroundColor: colors.primary[700],
+            boxShadow: '0 4px 8px rgba(22, 163, 74, 0.3)',
           },
         },
         outlined: {
-          border: '2px solid transparent',
-          background: `${glassEffect.background}`,
-          backdropFilter: glassEffect.backdropFilter,
+          borderColor: colors.secondary[300],
+          color: colors.secondary[700],
           '&:hover': {
-            border: `2px solid ${colors.primary[500]}`,
-            background: 'rgba(168, 85, 247, 0.1)',
-            transform: 'translateY(-1px)',
+            borderColor: colors.primary[600],
+            backgroundColor: colors.primary[50],
+            color: colors.primary[700],
           },
         },
       },
     },
-    // 🎨 GLASSMORPHIC CARDS
+    // 🎨 CLEAN CARDS
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 24,
-          background: glassEffect.background,
-          backdropFilter: glassEffect.backdropFilter,
-          border: glassEffect.border,
-          boxShadow: glassEffect.boxShadow,
-          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          borderRadius: 8,
+          backgroundColor: '#ffffff',
+          border: `1px solid ${colors.secondary[200]}`,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          transition: 'all 0.2s ease',
           '&:hover': {
-            transform: 'translateY(-8px) scale(1.02)',
-            boxShadow: '0 20px 60px rgba(168, 85, 247, 0.3)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            borderColor: colors.secondary[300],
           },
         },
       },
     },
-    // 📄 MODERN PAPERS
+    // 📄 CLEAN PAPERS
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 24,
-          background: glassEffect.background,
-          backdropFilter: glassEffect.backdropFilter,
-          border: glassEffect.border,
+          borderRadius: 8,
+          backgroundColor: '#ffffff',
+          border: `1px solid ${colors.secondary[200]}`,
         },
       },
     },
-    // 📝 FUTURISTIC TEXT FIELDS
+    // 📝 CLEAN TEXT FIELDS
     MuiTextField: {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 16,
-            background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease',
+            borderRadius: 6,
+            backgroundColor: '#ffffff',
             '&:hover': {
-              background: 'rgba(255, 255, 255, 0.08)',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: colors.primary[500],
+              },
             },
             '&.Mui-focused': {
-              background: 'rgba(255, 255, 255, 0.1)',
-              boxShadow: `0 0 0 2px ${colors.primary[500]}`,
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: colors.primary[600],
+                borderWidth: 2,
+              },
             },
           },
         },
       },
     },
-    // 🏷️ MODERN CHIPS
+    // 🏷️ CLEAN CHIPS
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          fontWeight: 500,
-          background: glassEffect.background,
-          backdropFilter: glassEffect.backdropFilter,
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          transition: 'all 0.3s ease',
+          borderRadius: 12,
+          fontWeight: 400,
+          backgroundColor: colors.secondary[100],
+          color: colors.secondary[700],
+          border: `1px solid ${colors.secondary[200]}`,
           '&:hover': {
-            transform: 'scale(1.05)',
-            background: 'rgba(168, 85, 247, 0.2)',
+            backgroundColor: colors.primary[50],
+            borderColor: colors.primary[300],
+            color: colors.primary[700],
           },
         },
       },
     },
-    // 📱 FLOATING APP BAR
+    // 📱 CLEAN APP BAR
     MuiAppBar: {
       styleOverrides: {
         root: {
-          background: glassEffect.background,
-          backdropFilter: glassEffect.backdropFilter,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          border: 'none',
+          backgroundColor: '#ffffff',
+          borderBottom: `1px solid ${colors.secondary[200]}`,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          color: colors.secondary[800],
         },
       },
     },
   },
 });
 
-// 🌟 ADDITIONAL CUSTOM STYLES FOR COMPONENTS
+// 🌟 CIFRACLUB-INSPIRED CUSTOM STYLES
 export const customStyles = {
-  glassCard: {
-    ...glassEffect,
-    borderRadius: '24px',
-    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  cleanCard: {
+    backgroundColor: '#ffffff',
+    border: `1px solid ${colors.secondary[200]}`,
+    borderRadius: '8px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    transition: 'all 0.2s ease',
     '&:hover': {
-      transform: 'translateY(-8px) scale(1.02)',
-      boxShadow: '0 20px 60px rgba(168, 85, 247, 0.3)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      borderColor: colors.secondary[300],
     },
   },
-  gradientText: {
-    background: colors.gradient.primary,
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
+  primaryText: {
+    color: colors.primary[600],
+    fontWeight: 600,
   },
-  floatingButton: {
-    background: colors.gradient.primary,
-    borderRadius: '50px',
-    padding: '16px 32px',
-    boxShadow: '0 8px 32px rgba(168, 85, 247, 0.4)',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  greenButton: {
+    backgroundColor: colors.primary[600],
+    color: '#ffffff',
+    borderRadius: '6px',
+    padding: '8px 16px',
+    fontWeight: 500,
+    transition: 'all 0.2s ease',
     '&:hover': {
-      transform: 'translateY(-4px) scale(1.05)',
-      boxShadow: '0 16px 48px rgba(168, 85, 247, 0.6)',
+      backgroundColor: colors.primary[700],
+      transform: 'translateY(-1px)',
     },
   },
-  pulseAnimation: {
-    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-    '@keyframes pulse': {
-      '0%, 100%': {
-        opacity: 1,
-      },
-      '50%': {
-        opacity: 0.5,
-      },
+  sidebarSection: {
+    backgroundColor: colors.secondary[50],
+    borderBottom: `1px solid ${colors.secondary[200]}`,
+    padding: '12px 16px',
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    color: colors.secondary[500],
+    letterSpacing: '0.5px',
+  },
+  sidebarLink: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '12px 16px',
+    color: colors.secondary[600],
+    textDecoration: 'none',
+    fontSize: '0.9rem',
+    transition: 'all 0.2s ease',
+    gap: '10px',
+    '&:hover': {
+      backgroundColor: colors.primary[50],
+      color: colors.primary[700],
+    },
+    '&.active': {
+      backgroundColor: colors.primary[50],
+      color: colors.primary[700],
+      fontWeight: 600,
     },
   },
-  parallaxContainer: {
-    position: 'relative',
-    overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: colors.gradient.primary,
-      opacity: 0.1,
-      animation: 'float 6s ease-in-out infinite',
-    },
-    '@keyframes float': {
-      '0%, 100%': {
-        transform: 'translateY(0px)',
-      },
-      '50%': {
-        transform: 'translateY(-20px)',
-      },
-    },
+  heroGradient: {
+    background: colors.gradient.primary,
+    color: 'white',
+    padding: '40px',
+    borderRadius: '12px',
+    textAlign: 'center',
   },
 };
 
 // Export colors for use in components
-export { colors, glassEffect, neumorphismLight, neumorphismDark };
+export { colors };
