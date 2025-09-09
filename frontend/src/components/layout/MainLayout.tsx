@@ -80,10 +80,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           color: colors.secondary[800],
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between', maxWidth: 1200, width: '100%', mx: 'auto' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+        <Toolbar sx={{ justifyContent: 'space-between', maxWidth: 1200, width: '100%', mx: 'auto', py: 1 }}>
+          {/* Logo Section - Aligned to the left */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography
-              variant="h6"
+              variant="h4"
               component="div"
               onClick={() => navigate('/')}
               sx={{
@@ -92,20 +93,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1,
+                gap: 2,
+                fontSize: '1.75rem',
+                letterSpacing: '-0.02em',
                 '&:hover': {
-                  transform: 'scale(1.02)'
+                  transform: 'scale(1.03)'
                 },
                 transition: 'transform 0.2s ease'
               }}
             >
-              <MusicNoteIcon />
+              <MusicNoteIcon sx={{ fontSize: '2.5rem', color: colors.primary[600] }} />
               SharedMelody
             </Typography>
+          </Box>
 
-            {/* Desktop Navigation - CifraClub style */}
-            {!isMobile && (
-              <Box sx={{ display: 'flex', gap: 0 }}>
+          {/* Center Navigation - Desktop only */}
+          {!isMobile && (
+            <Box sx={{ display: 'flex', gap: 0 }}>
                 {navigationItems.map((item) => (
                   <Button
                     key={item.path}
@@ -133,9 +137,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 ))}
               </Box>
             )}
-          </Box>
 
-          {/* User Actions - Clean style */}
+          {/* Right Side Actions - All buttons aligned to the right */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Language Selector */}
             <LanguageSelector variant="icon" />

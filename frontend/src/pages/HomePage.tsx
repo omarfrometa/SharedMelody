@@ -220,7 +220,7 @@ const HomePage = () => {
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <TrendingUpIcon sx={{ color: colors.primary[600] }} />
-                Cifras mais acessadas
+                Canciones más vistas
               </Box>
               <Button size="small" sx={{ color: colors.primary[600] }}>
                 Ver todas
@@ -235,32 +235,55 @@ const HomePage = () => {
                   </ListItem>
                 ))
               ) : (
-                songs.slice(0, 5).map((song, index) => (
-                  <ListItem 
-                    key={song.songId} 
-                    sx={{ 
+                songs.slice(0, 15).map((song, index) => (
+                  <ListItem
+                    key={song.songId}
+                    sx={{
                       borderBottom: `1px solid ${colors.secondary[100]}`,
-                      '&:hover': { 
-                        backgroundColor: colors.secondary[50] 
+                      '&:hover': {
+                        backgroundColor: colors.secondary[50]
                       },
                       '&:last-child': {
                         borderBottom: 'none'
                       }
                     }}
                   >
-                    <Box sx={{ 
-                      width: 24, 
-                      color: colors.primary[600], 
-                      fontWeight: 700, 
-                      mr: 2 
+                    <Box sx={{
+                      width: 24,
+                      color: colors.primary[600],
+                      fontWeight: 700,
+                      mr: 2
                     }}>
                       {index + 1}
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" fontWeight={600} sx={{ color: colors.secondary[800] }}>
+                      <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        sx={{
+                          color: colors.secondary[800],
+                          cursor: 'pointer',
+                          '&:hover': {
+                            color: colors.primary[600],
+                            textDecoration: 'underline'
+                          }
+                        }}
+                        onClick={() => navigate(`/songs/${song.songId}`)}
+                      >
                         {song.title}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: colors.secondary[600] }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: colors.secondary[600],
+                          cursor: 'pointer',
+                          '&:hover': {
+                            color: colors.primary[600],
+                            textDecoration: 'underline'
+                          }
+                        }}
+                        onClick={() => navigate(`/artist/${encodeURIComponent(song.artistName)}`)}
+                      >
                         {song.artistName}
                       </Typography>
                     </Box>
@@ -360,7 +383,7 @@ const HomePage = () => {
           {/* Artistas em destaque */}
           <Box sx={{ ...customStyles.cleanCard, mb: 2, overflow: 'hidden' }}>
             <Box sx={customStyles.sidebarSection}>
-              Artistas em destaque
+              Canciones Destacadas
             </Box>
             <Box sx={{ p: 2 }}>
               {['Legião Urbana', 'Caetano Veloso', 'Chico Buarque', 'Tom Jobim'].map((artist, index) => (

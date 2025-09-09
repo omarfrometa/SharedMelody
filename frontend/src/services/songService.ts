@@ -159,6 +159,18 @@ export const songService = {
     }
   },
 
+  // Obtener canciones por artista
+  async getSongsByArtist(artistName: string, filters?: SongFilters): Promise<SongDetailed[]> {
+    try {
+      const response = await apiClient.get<PaginatedResponse<SongDetailed>>('/songs/search', {
+        params: { query: artistName, artist: artistName, ...filters }
+      });
+      return response.data.data || [];
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al obtener canciones por artista');
+    }
+  },
+
   // Obtener canciones de un usuario
   async getUserSongs(userId: string, filters?: SongFilters): Promise<PaginatedResponse<SongDetailed>> {
     try {

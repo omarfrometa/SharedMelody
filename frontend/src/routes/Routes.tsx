@@ -19,6 +19,7 @@ import SongEditPage from '../pages/SongEditPage';
 import SongRequestPage from '../pages/SongRequestPage';
 import SongHistoryPage from '../pages/SongHistoryPage';
 import SongEditorDemoPage from '../pages/SongEditorDemoPage';
+import ArtistPage from '../pages/ArtistPage';
 
 // User Pages
 import ProfilePage from '../pages/ProfilePage';
@@ -57,6 +58,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/songs" element={<SongListPage />} />
       <Route path="/songs/:id" element={<SongDetailPage />} />
+      <Route path="/artist/:artistName" element={<ArtistPage />} />
       <Route path="/cifraclub" element={<CifraClubHomePage />} />
       <Route path="/cifraclub/songs" element={<CifraClubSongListPage />} />
 
