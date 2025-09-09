@@ -62,6 +62,23 @@ const HomePage = () => {
     queryFn: () => songService.getTopArtists(5),
   });
 
+  const { data: siteStats, isLoading: isLoadingStats } = useQuery<{
+    totalSongs: number;
+    totalArtists: number;
+    totalUsers: number;
+    totalViews: number;
+  }, Error>({
+    queryKey: ['siteStats'],
+    queryFn: () => songService.getSiteStats(),
+  });
+
+  const { data: featuredSongs, isLoading: isLoadingFeatured, error: featuredError } = useQuery<SongDetailed[], Error>({
+    queryKey: ['featuredSongs'],
+    queryFn: () => songService.getFeaturedSongs(4),
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+
   const songs = songsResponse?.data || [];
 
   const handleSearch = () => setSearch(query);
@@ -366,40 +383,48 @@ const HomePage = () => {
               Estatísticas
             </Box>
             <Box sx={{ p: 2 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
-                  <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
-                    284K
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
-                    Canciones
-                  </Typography>
+              {isLoadingStats ? (
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  {[...Array(4)].map((_, index) => (
+                    <Skeleton key={index} variant="rectangular" height={60} />
+                  ))}
                 </Box>
-                <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
-                  <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
-                    52K
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
-                    Artistas
-                  </Typography>
+              ) : (
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
+                    <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
+                      {siteStats?.totalSongs?.toLocaleString() || '0'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                      Canciones
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
+                    <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
+                      {siteStats?.totalArtists?.toLocaleString() || '0'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                      Artistas
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
+                    <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
+                      {siteStats?.totalUsers?.toLocaleString() || '0'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                      Usuarios
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
+                    <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
+                      {siteStats?.totalViews?.toLocaleString() || '0'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                      Visitas
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
-                  <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
-                    1.2M
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
-                    Usuários
-                  </Typography>
-                </Box>
-                <Box sx={{ textAlign: 'center', p: 1, backgroundColor: colors.secondary[50], borderRadius: 1 }}>
-                  <Typography variant="h5" fontWeight={700} sx={{ color: colors.primary[600] }}>
-                    850K
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
-                    Visitas
-                  </Typography>
-                </Box>
-              </Box>
+              )}
             </Box>
           </Box>
 
@@ -409,49 +434,108 @@ const HomePage = () => {
               Canciones Destacadas
             </Box>
             <Box sx={{ p: 2 }}>
-              {['Legião Urbana', 'Caetano Veloso', 'Chico Buarque', 'Tom Jobim'].map((artist, index) => (
-                <Box key={artist} sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 2, 
-                  py: 1.5,
-                  borderBottom: index < 3 ? `1px solid ${colors.secondary[100]}` : 'none'
-                }}>
-                  <Avatar sx={{ 
-                    width: 40, 
-                    height: 40, 
-                    background: colors.gradient.primary,
-                    fontWeight: 600
+              {isLoadingFeatured ? (
+                [...Array(4)].map((_, index) => (
+                  <Box key={index} sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    py: 1.5,
+                    borderBottom: index < 3 ? `1px solid ${colors.secondary[100]}` : 'none'
                   }}>
-                    {artist.split(' ').map(n => n[0]).join('')}
-                  </Avatar>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ color: colors.secondary[800] }}>
-                      {artist}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
-                      {[142, 98, 87, 76][index]} cifras
-                    </Typography>
+                    <Skeleton variant="circular" width={40} height={40} />
+                    <Box sx={{ flex: 1 }}>
+                      <Skeleton variant="text" width="80%" />
+                      <Skeleton variant="text" width="60%" />
+                    </Box>
                   </Box>
-                  <Button 
-                    size="small" 
-                    variant="outlined"
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      py: 0.5,
-                      px: 1.5,
-                      borderColor: colors.primary[600],
-                      color: colors.primary[600],
+                ))
+              ) : featuredError ? (
+                <Box sx={{
+                  textAlign: 'center',
+                  py: 3,
+                  color: colors.secondary[600]
+                }}>
+                  <Typography variant="body2">
+                    Error al cargar canciones destacadas
+                  </Typography>
+                </Box>
+              ) : !featuredSongs || featuredSongs.length === 0 ? (
+                <Box sx={{
+                  textAlign: 'center',
+                  py: 3,
+                  color: colors.secondary[600]
+                }}>
+                  <Typography variant="body2">
+                    No hay canciones destacadas disponibles
+                  </Typography>
+                </Box>
+              ) : (
+                featuredSongs.map((song, index) => (
+                  <Box
+                    key={song.songId}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      py: 1.5,
+                      borderBottom: index < 3 ? `1px solid ${colors.secondary[100]}` : 'none',
+                      cursor: 'pointer',
                       '&:hover': {
-                        backgroundColor: colors.primary[600],
-                        color: 'white'
+                        backgroundColor: colors.secondary[50]
                       }
                     }}
+                    onClick={() => navigate(`/songs/${song.songId}`)}
                   >
-                    Seguir
-                  </Button>
-                </Box>
-              ))}
+                    <Avatar sx={{
+                      width: 40,
+                      height: 40,
+                      background: colors.gradient.primary,
+                      fontWeight: 600
+                    }}>
+                      {song.artistName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                    </Avatar>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        sx={{
+                          color: colors.secondary[800],
+                          '&:hover': {
+                            color: colors.primary[600]
+                          }
+                        }}
+                      >
+                        {song.title}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
+                        {song.artistName} • {(song.viewCount || 0).toLocaleString()} visualizaciones
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        fontSize: '0.75rem',
+                        py: 0.5,
+                        px: 1.5,
+                        borderColor: colors.primary[600],
+                        color: colors.primary[600],
+                        '&:hover': {
+                          backgroundColor: colors.primary[600],
+                          color: 'white'
+                        }
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/artist/${encodeURIComponent(song.artistName)}`);
+                      }}
+                    >
+                      Ver Artista
+                    </Button>
+                  </Box>
+                ))
+              )}
             </Box>
           </Box>
 
