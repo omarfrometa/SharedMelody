@@ -72,7 +72,8 @@
     "dark": "Dark",
     "light": "Light",
     "auto": "Auto",
-    "more": "More"
+    "more": "More",
+    "or": "or"
   },
   "navigation": {
     "home": "Home",
@@ -124,7 +125,12 @@
     "accountLocked": "Account locked",
     "emailNotVerified": "Email not verified",
     "tokenExpired": "Token expired",
-    "tokenInvalid": "Invalid token"
+    "tokenInvalid": "Invalid token",
+    "googleAuthFailed": "Google authentication failed",
+    "microsoftAuthFailed": "Microsoft authentication failed",
+    "appleAuthFailed": "Apple authentication failed",
+    "tokenProcessingFailed": "Token processing failed",
+    "invalidCallback": "Invalid authentication callback"
   },
   "songs": {
     "title": "Songs",

@@ -29,7 +29,9 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from '../../contexts/LanguageContext';
 import { customStyles, colors } from '../../theme/theme';
+import LanguageSelector from '../common/LanguageSelector';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -41,6 +43,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user, isAuthenticated, logout, hasRole } = useAuth();
+  const { t } = useTranslation();
   
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -59,10 +62,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const navigationItems = [
-    { path: '/', label: 'Inicio', icon: <HomeIcon /> },
-    { path: '/songs', label: 'Canciones', icon: <LibraryMusicIcon /> },
-    { path: '/upload', label: 'Subir', icon: <UploadIcon /> },
-    { path: '/request', label: 'Solicitar', icon: <AddIcon /> },
+    { path: '/', label: t('navigation.home'), icon: <HomeIcon /> },
+    { path: '/songs', label: t('navigation.songs'), icon: <LibraryMusicIcon /> },
+    { path: '/upload', label: t('navigation.upload'), icon: <UploadIcon /> },
+    { path: '/request', label: t('navigation.request'), icon: <AddIcon /> },
   ];
 
   return (
@@ -134,9 +137,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
           {/* User Actions - Clean style */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Language Selector */}
+            <LanguageSelector variant="icon" />
             {isAuthenticated ? (
               <>
-                <Tooltip title="Mensajes">
+                <Tooltip title={t('navigation.messages')}>
                   <IconButton
                     onClick={() => navigate('/messages')}
                     sx={{
@@ -151,7 +156,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Favoritos">
+                <Tooltip title={t('navigation.favorites')}>
                   <IconButton
                     onClick={() => navigate('/favorites')}
                     sx={{
@@ -167,7 +172,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </Tooltip>
 
                 {hasRole('admin') && (
-                  <Tooltip title="Admin">
+                  <Tooltip title={t('navigation.admin')}>
                     <IconButton
                       onClick={() => navigate('/admin')}
                       sx={{
@@ -223,7 +228,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     }
                   }}
                 >
-                  Entrar
+                  {t('navigation.login')}
                 </Button>
               </Box>
             )}
@@ -258,7 +263,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           }}
         >
           <PersonIcon sx={{ mr: 2 }} />
-          Mi Perfil
+          {t('navigation.profile')}
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -274,7 +279,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           }}
         >
           <SettingsIcon sx={{ mr: 2 }} />
-          Configuración
+          {t('navigation.settings')}
         </MenuItem>
         <MenuItem
           onClick={handleLogout}
@@ -286,7 +291,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           }}
         >
           <LogoutIcon sx={{ mr: 2 }} />
-          Cerrar Sesión
+          {t('navigation.logout')}
         </MenuItem>
       </Menu>
 

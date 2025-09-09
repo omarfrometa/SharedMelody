@@ -72,7 +72,8 @@
     "dark": "Oscuro",
     "light": "Claro",
     "auto": "Automático",
-    "more": "Más"
+    "more": "Más",
+    "or": "o"
   },
   "navigation": {
     "home": "Inicio",
@@ -124,7 +125,12 @@
     "accountLocked": "Cuenta bloqueada",
     "emailNotVerified": "Correo electrónico no verificado",
     "tokenExpired": "Token expirado",
-    "tokenInvalid": "Token inválido"
+    "tokenInvalid": "Token inválido",
+    "googleAuthFailed": "Error en autenticación con Google",
+    "microsoftAuthFailed": "Error en autenticación con Microsoft",
+    "appleAuthFailed": "Error en autenticación con Apple",
+    "tokenProcessingFailed": "Error procesando token de autenticación",
+    "invalidCallback": "Callback de autenticación inválido"
   },
   "songs": {
     "title": "Canciones",

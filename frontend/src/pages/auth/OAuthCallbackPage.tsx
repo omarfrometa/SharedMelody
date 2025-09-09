@@ -2,11 +2,13 @@ import React, { useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import { Box, CircularProgress, Typography, Paper } from '@mui/material';
+import { useTranslation } from '../../contexts/LanguageContext';
 
 const OAuthCallbackPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const authContext = useContext(AuthContext);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -51,7 +53,9 @@ const OAuthCallbackPage = () => {
     >
       <Paper sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
         <CircularProgress />
-        <Typography>Procesando autenticación...</Typography>
+        <Typography>
+          {t('auth.loginSuccess') || 'Procesando autenticación...'}
+        </Typography>
       </Paper>
     </Box>
   );
