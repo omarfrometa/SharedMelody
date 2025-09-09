@@ -300,7 +300,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </Menu>
 
       {/* Breadcrumb Navigation */}
-      <Box sx={{ marginTop: '80px' }}>
+      <Box sx={{ marginTop: '85px' }}>
         <Breadcrumb />
       </Box>
 

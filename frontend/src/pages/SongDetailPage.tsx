@@ -610,23 +610,6 @@ const SongDetailPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }} className="print-container">
-      {/* Encabezado para impresión */}
-      <div className="print-only song-header">
-        <img
-          src="/logo.png"
-          alt="Logo"
-          className="song-logo"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none';
-          }}
-        />
-        <div className="song-title">{song.title}</div>
-        <div className="song-info">
-          <div className="song-artist">Artista: {song.artistName}</div>
-          <div className="song-singer">Intérprete: {song.artistName}</div>
-        </div>
-      </div>
-
       {/* Header de la canción */}
       <Card sx={{ mb: 4 }} className="no-print">
         <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>

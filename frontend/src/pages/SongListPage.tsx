@@ -190,15 +190,17 @@ const SongListPage: React.FC = () => {
   };
 
   return (
-    <Box>
-      {/* Header Section */}
-      <Box sx={{
-        mb: 4,
-        p: 4,
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-        borderRadius: 3,
-        textAlign: 'center'
-      }}>
+    <Container maxWidth="xl" sx={{ py: 2 }}>
+      <Box>
+        {/* Header Section */}
+        <Box sx={{
+          mb: 4,
+          p: 4,
+          mx: { xs: 1, sm: 2 }, // Espaciado horizontal responsivo
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+          borderRadius: 3,
+          textAlign: 'center'
+        }}>
         <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
           Biblioteca Musical
         </Typography>
@@ -225,15 +227,16 @@ const SongListPage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Filtros y búsqueda */}
-      <Paper sx={{
-        p: 3,
-        mb: 4,
-        borderRadius: 3,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-      }}>
+        {/* Filtros y búsqueda */}
+        <Paper sx={{
+          p: 3,
+          mb: 4,
+          mx: { xs: 1, sm: 2 }, // Espaciado horizontal responsivo
+          borderRadius: 3,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(10px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+        }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
           <Box sx={{ minWidth: 300, flex: '1 1 300px' }}>
             <TextField
@@ -327,30 +330,37 @@ const SongListPage: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Resultados */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="body2" color="text.secondary">
-          {loading ? 'Cargando...' : `${totalSongs} canciones encontradas`}
-        </Typography>
-      </Box>
+        {/* Resultados */}
+        <Box sx={{
+          mb: 3,
+          px: { xs: 1, sm: 2 } // Espaciado horizontal responsivo
+        }}>
+          <Typography variant="body2" color="text.secondary">
+            {loading ? 'Cargando...' : `${totalSongs} canciones encontradas`}
+          </Typography>
+        </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+        {error && (
+          <Alert severity="error" sx={{
+            mb: 3,
+            mx: { xs: 1, sm: 2 } // Espaciado horizontal responsivo
+          }}>
+            {error}
+          </Alert>
+        )}
 
       {loading ? (
         <Box display="flex" justifyContent="center" py={4}>
           <CircularProgress />
         </Box>
-      ) : viewMode === 'grid' ? (
-        // Vista de cuadrícula
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
-          gap: 3
-        }}>
+        ) : viewMode === 'grid' ? (
+          // Vista de cuadrícula
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
+            gap: 3,
+            px: { xs: 1, sm: 2 } // Espaciado horizontal responsivo
+          }}>
           {songs.map((song) => (
             <Card
               key={song.songId}
@@ -444,17 +454,28 @@ const SongListPage: React.FC = () => {
             </Card>
           ))}
         </Box>
-      ) : (
-        // Vista de lista
-        <Paper>
-          <List>
-            {songs.map((song, index) => (
-              <ListItem
-                key={song.songId}
-                divider={index < songs.length - 1}
-                sx={{ cursor: 'pointer' }}
-                onClick={() => handleSongClick(String(song.songId))}
-              >
+        ) : (
+          // Vista de lista
+          <Paper sx={{
+            mx: { xs: 1, sm: 2 } // Espaciado horizontal responsivo
+          }}>
+            <List sx={{
+              px: { xs: 1, sm: 2 } // Espaciado interno del List
+            }}>
+              {songs.map((song, index) => (
+                <ListItem
+                  key={song.songId}
+                  divider={index < songs.length - 1}
+                  sx={{
+                    cursor: 'pointer',
+                    px: { xs: 2, sm: 3 }, // Espaciado horizontal responsivo
+                    py: 2, // Espaciado vertical
+                    '&:hover': {
+                      backgroundColor: 'action.hover'
+                    }
+                  }}
+                  onClick={() => handleSongClick(String(song.songId))}
+                >
                 <ListItemAvatar>
                   <Avatar>
                     <MusicIcon />
@@ -494,26 +515,26 @@ const SongListPage: React.FC = () => {
                   <PlayIcon />
                 </IconButton>
               </ListItem>
-            ))}
-          </List>
-        </Paper>
-      )}
+              ))}
+            </List>
+          </Paper>
+        )}
 
-      {/* Paginación */}
-      {totalPages > 1 && (
-        <Box display="flex" justifyContent="center" mt={4}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            size="large"
-          />
-        </Box>
-      )}
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <Box display="flex" justifyContent="center" mt={4} px={{ xs: 1, sm: 2 }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+            />
+          </Box>
+        )}
 
-      {songs.length === 0 && !loading && (
-        <Box textAlign="center" py={8}>
+        {songs.length === 0 && !loading && (
+          <Box textAlign="center" py={8} px={{ xs: 1, sm: 2 }}>
           <MusicIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No se encontraron canciones
@@ -521,9 +542,10 @@ const SongListPage: React.FC = () => {
           <Typography variant="body2" color="text.secondary">
             Intenta ajustar los filtros de búsqueda o explora otras categorías.
           </Typography>
-        </Box>
-      )}
-    </Box>
+          </Box>
+        )}
+      </Box>
+    </Container>
   );
 };
 
