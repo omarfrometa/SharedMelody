@@ -16,11 +16,9 @@ services:
     container_name: sharedmelody_backend
     restart: unless-stopped
     environment:
-      # Configuración del servidor
       NODE_ENV: development
       PORT: 3001
       FRONTEND_URL: https://sharedmelody.com
-      # Base de datos PostgreSQL - SSL DESHABILITADO
       DB_HOST: 154.12.227.234
       DB_PORT: 5432
       DB_NAME: sharedmelody_db
@@ -28,23 +26,18 @@ services:
       DB_PASSWORD: 69dMb7HBjJLL
       DB_SSL: "false"
       DB_SSLMODE: "disable"
-      # JWT
       JWT_SECRET: shared-melody-super-secret-jwt-key-2024
       JWT_EXPIRES_IN: 24h
       JWT_REFRESH_SECRET: shared-melody-super-secret-refresh-key-2024
       JWT_REFRESH_EXPIRES_IN: 7d
-      # Google OAuth
       GOOGLE_CLIENT_ID: 191069086328-ih31gmnmqq5sl2134dumg7ff0h8bnfbo.apps.googleusercontent.com
       GOOGLE_CLIENT_SECRET: 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
-      # Microsoft OAuth (deshabilitado)
       MICROSOFT_CLIENT_ID: "DISABLED"
       MICROSOFT_CLIENT_SECRET: "DISABLED"
-      # Apple OAuth (deshabilitado)
       APPLE_CLIENT_ID: "DISABLED"
       APPLE_TEAM_ID: "DISABLED"
       APPLE_KEY_ID: "DISABLED"
       APPLE_PRIVATE_KEY_PATH: "DISABLED"
-      # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: redis_secure_password_123
@@ -57,16 +50,18 @@ services:
 
   # ==================== FRONTEND ====================
   frontend:
-    build: ./frontend
-    container_name: sharedmelody_frontend
-    restart: unless-stopped
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sharedmelody_frontend   # 👈 corregido
     ports:
-      - "3000:3000"
+      - "3000:80"   # 👈 Nginx escucha en 80, lo exponemos como 3000
+    depends_on:
+      - backend
     environment:
       - REACT_APP_API_URL=https://sharedmelody.com:3001
       - REACT_APP_APP_NAME=SharedMelody
-    depends_on:
-      - backend
+    restart: always
     networks:
       - sharedmelody_network
 
