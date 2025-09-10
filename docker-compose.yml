@@ -59,7 +59,7 @@ services:
     depends_on:
       - backend
     environment:
-      - REACT_APP_API_URL=https://sharedmelody.com:3001
+      - REACT_APP_API_URL=https://api.sharedmelody.com/api
       - REACT_APP_APP_NAME=SharedMelody
     restart: always
     networks:
