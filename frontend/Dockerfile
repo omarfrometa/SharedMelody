@@ -1,61 +1,20 @@
-# =============================================
-# SHARED MELODY FRONTEND - DOCKERFILE
-# Vue 3 + TypeScript + Material-UI
-# =============================================
-
 # Build stage
-FROM node:18-alpine as build
+FROM node:18-alpine AS build
 
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci --silent
-
-# Copy source code
 COPY . .
-
-# Build the Vue app (output: /dist)
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Production stage - Usa un servidor web simple o solo sirve los archivos estáticos
+FROM node:18-alpine AS production
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+WORKDIR /app
+RUN npm install -g serve
 
-# Copy built app from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/build ./build
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 3000
 
-# Create nginx user
-RUN addgroup -g 1001 -S nginx && \
-    adduser -S nginx -u 1001 -G nginx
-
-# Set ownership
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/conf.d
-
-# Switch to non-root user
-USER nginx
-
-# Expose port
-EXPOSE 80
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f https:sharedmelody || exit 1
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
-
-# Labels
-LABEL maintainer="SharedMelody Team"
-LABEL description="SharedMelody Frontend - Vue Application"
-LABEL version="1.0.0"
+CMD ["serve", "-s", "build", "-l", "3000"]
