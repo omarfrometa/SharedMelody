@@ -83,7 +83,7 @@ const LoginPage: React.FC = () => {
     setError('');
     
     // Redirect to OAuth provider
-    const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const baseUrl = process.env.REACT_APP_API_URL || 'https://sharedmelody.com:5000';
     window.location.href = `${baseUrl}/api/auth/${provider}`;
   };
 

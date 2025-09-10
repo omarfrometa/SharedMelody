@@ -5,7 +5,7 @@ import * as authController from '../controllers/authController';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'shared-melody-secret-key-2024';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://sharedmelody.com:3000';
 
 // Rutas de autenticación local
 router.post('/login', authController.login);

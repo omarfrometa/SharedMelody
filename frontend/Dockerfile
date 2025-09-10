@@ -1,6 +1,6 @@
 # =============================================
 # SHARED MELODY FRONTEND - DOCKERFILE
-# React 18 + TypeScript + Material-UI
+# Vue 3 + TypeScript + Material-UI
 # =============================================
 
 # Build stage
@@ -17,7 +17,7 @@ RUN npm ci --silent
 # Copy source code
 COPY . .
 
-# Build the React app
+# Build the Vue app (output: /dist)
 RUN npm run build
 
 # Production stage
@@ -27,7 +27,7 @@ FROM nginx:alpine
 RUN apk add --no-cache curl
 
 # Copy built app from build stage
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -50,12 +50,12 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost/ || exit 1
+  CMD curl -f https:sharedmelody || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
 
 # Labels
 LABEL maintainer="SharedMelody Team"
-LABEL description="SharedMelody Frontend - React Application"
+LABEL description="SharedMelody Frontend - Vue Application"
 LABEL version="1.0.0"

@@ -1,140 +1,75 @@
-# =============================================
-# SHARED MELODY - DOCKER COMPOSE
-# Frontend (React) + Backend (Node.js) + Database (PostgreSQL) + Redis
-# =============================================
-
 version: '3.8'
 
 services:
-  # =============================================
-  # REDIS (Session Store)
-  # =============================================
+  # ==================== REDIS ====================
   redis:
     image: redis:7-alpine
     container_name: sharedmelody_redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_secure_password}
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    command: redis-server --appendonly yes --requirepass redis_secure_password_123
     networks:
       - sharedmelody_network
 
-  # =============================================
-  # BACKEND (Node.js + Express + TypeScript)
-  # =============================================
+  # ==================== BACKEND ====================
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    build: ./backend
     container_name: sharedmelody_backend
     restart: unless-stopped
     environment:
-      # Server Configuration
-      NODE_ENV: ${NODE_ENV:-production}
+      # Configuración del servidor
+      NODE_ENV: development
       PORT: 3001
-
-      # Database Configuration (External PostgreSQL)
-      DB_HOST: ${DB_HOST:-host.docker.internal}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_NAME: ${DB_NAME:-sharedmelody_db}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_POOL_MAX: 20
-      DB_POOL_MIN: 0
-      DB_IDLE_TIMEOUT: 10000
-      DB_CONNECTION_TIMEOUT: 30000
-
-      # Redis Configuration
+      FRONTEND_URL: https://sharedmelody.com
+      # Base de datos PostgreSQL - SSL DESHABILITADO
+      DB_HOST: 154.12.227.234
+      DB_PORT: 5432
+      DB_NAME: sharedmelody_db
+      DB_USER: postgresroot
+      DB_PASSWORD: 69dMb7HBjJLL
+      DB_SSL: "false"
+      DB_SSLMODE: "disable"
+      # JWT
+      JWT_SECRET: shared-melody-super-secret-jwt-key-2024
+      JWT_EXPIRES_IN: 24h
+      JWT_REFRESH_SECRET: shared-melody-super-secret-refresh-key-2024
+      JWT_REFRESH_EXPIRES_IN: 7d
+      # Google OAuth
+      GOOGLE_CLIENT_ID: 191069086328-ih31gmnmqq5sl2134dumg7ff0h8bnfbo.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: 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
+      # Microsoft OAuth (deshabilitado)
+      MICROSOFT_CLIENT_ID: "DISABLED"
+      MICROSOFT_CLIENT_SECRET: "DISABLED"
+      # Apple OAuth (deshabilitado)
+      APPLE_CLIENT_ID: "DISABLED"
+      APPLE_TEAM_ID: "DISABLED"
+      APPLE_KEY_ID: "DISABLED"
+      APPLE_PRIVATE_KEY_PATH: "DISABLED"
+      # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_secure_password}
-
-      # JWT Configuration
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-key-change-in-production}
-      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
-
-      # Email Configuration
-      EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
-      EMAIL_PORT: ${EMAIL_PORT:-587}
-      EMAIL_USER: ${EMAIL_USER:-your-email@gmail.com}
-      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-your-app-password}
-      EMAIL_FROM: ${EMAIL_FROM:-noreply@sharedmelody.com}
-
-      # File Upload Configuration
-      UPLOAD_MAX_SIZE: ${UPLOAD_MAX_SIZE:-10485760}
-      UPLOAD_ALLOWED_TYPES: ${UPLOAD_ALLOWED_TYPES:-image/jpeg,image/png,image/gif,audio/mpeg,audio/wav,audio/flac}
-      UPLOAD_DEST: ${UPLOAD_DEST:-./uploads}
-
-      # Rate Limiting
-      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
-      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
-
-      # OAuth Providers (Configure as needed)
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      FACEBOOK_APP_ID: ${FACEBOOK_APP_ID:-}
-      FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET:-}
-      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
-      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
-      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
-      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
-      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
-      APPLE_PRIVATE_KEY_PATH: ${APPLE_PRIVATE_KEY_PATH:-./keys/apple-private-key.p8}
-
-    volumes:
-      - backend_uploads:/app/uploads
-      - backend_logs:/app/logs
-      # Mount SSL certificates or keys if needed
-      # - ./keys:/app/keys:ro
+      REDIS_PASSWORD: redis_secure_password_123
+    ports:
+      - "3001:3001"
     depends_on:
-      redis:
-        condition: service_healthy
+      - redis
     networks:
       - sharedmelody_network
 
-  # =============================================
-  # FRONTEND (React + TypeScript + Material-UI)
-  # =============================================
+  # ==================== FRONTEND ====================
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    build: ./frontend
     container_name: sharedmelody_frontend
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "3000:80"  # Alternative port for development
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=https://sharedmelody.com:3001
+      - REACT_APP_APP_NAME=SharedMelody
     depends_on:
       - backend
     networks:
       - sharedmelody_network
 
-# =============================================
-# VOLUMES
-# =============================================
-volumes:
-  redis_data:
-    driver: local
-  backend_uploads:
-    driver: local
-  backend_logs:
-    driver: local
-
-# =============================================
-# NETWORKS
-# =============================================
 networks:
   sharedmelody_network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16

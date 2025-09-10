@@ -5,7 +5,7 @@ import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 
 // =============================================
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
+  baseURL: process.env.REACT_APP_API_URL || 'https://sharedmelody.com:3001/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

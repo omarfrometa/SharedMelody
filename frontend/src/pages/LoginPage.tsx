@@ -168,7 +168,7 @@ const LoginPage = () => {
   };
 
   const handleOAuthLogin = (provider: string) => {
-    window.location.href = `http://localhost:3001/api/auth/${provider}`;
+    window.location.href = `https://sharedmelody.com/api/auth/${provider}`;
   };
 
   return (
