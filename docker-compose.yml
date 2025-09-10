@@ -55,7 +55,7 @@ services:
       dockerfile: Dockerfile
     container_name: sharedmelody_frontend   # 👈 corregido
     ports:
-      - "3000:80"   # 👈 Nginx escucha en 80, lo exponemos como 3000
+      - "3000:80"
     depends_on:
       - backend
     environment:

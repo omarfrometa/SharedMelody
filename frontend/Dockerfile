@@ -1,46 +1,36 @@
 # =============================================
-# SHARED MELODY FRONTEND - DOCKERFILE
+# SHARED MELODY FRONTEND - DOCKERFILE (PROD)
 # React 18 + TypeScript + Material-UI
 # =============================================
 
-# Build stage
+# ---------- Etapa de build ----------
 FROM node:18-alpine as build
 
 WORKDIR /app
 
+# Copiar archivos de dependencias primero (aprovecha la caché)
 COPY package*.json ./
+
+# Instalar dependencias
 RUN npm ci --silent
 
+# Copiar el resto del proyecto (incluye src/ y public/)
 COPY . .
 
-# React build -> /build
+# Ejecutar build de producción
 RUN npm run build
 
-# Production stage
+# ---------- Etapa final ----------
 FROM nginx:alpine
-RUN apk add --no-cache curl
 
-# Copy React build output
+# Copiar build al directorio por defecto de Nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Opcional: reemplazar la config de Nginx si necesitas SPA routing
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN addgroup -g 1001 -S nginx && \
-    adduser -S nginx -u 1001 -G nginx
-
-RUN chown -R nginx:nginx /usr/share/nginx/html \
-    && chown -R nginx:nginx /var/cache/nginx \
-    && chown -R nginx:nginx /var/log/nginx \
-    && chown -R nginx:nginx /etc/nginx/conf.d
-
-USER nginx
+# Exponer puerto
 EXPOSE 80
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f https://sharedmelody.com || exit 1
-
+# Mantener Nginx corriendo
 CMD ["nginx", "-g", "daemon off;"]
-
-LABEL maintainer="SharedMelody Team"
-LABEL description="SharedMelody Frontend - React Application"
-LABEL version="1.0.0"
