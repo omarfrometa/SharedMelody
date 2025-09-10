@@ -53,9 +53,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: sharedmelody_frontend   # 👈 corregido
+    container_name: sharedmelody_frontend
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       - backend
     environment:
