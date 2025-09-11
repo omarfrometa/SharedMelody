@@ -10,30 +10,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descarga el código del repo
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Inicia el agente SSH con tu llave privada (de GitHub Secrets)
+      # 2. Setup SSH
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 3. Despliega al servidor
+      # 3. Deploy on server
       - name: Deploy to server
+        id: deploy
         run: |
+          set -e
           ssh -o StrictHostKeyChecking=no deploy@109.199.123.102 << 'EOF'
             set -e
             cd ~/SharedMelody
-
-            echo "Pulling latest changes..."
+            echo "🔄 Pulling latest changes..."
             git fetch --all
             git reset --hard origin/main
-
-            echo "Rebuilding containers..."
+            echo "🛠 Rebuilding containers..."
             docker compose down
             docker compose up -d --build
-
-            echo "Deployment finished ✅"
+            echo "✅ Deployment finished"
           EOF
+
+      # 4. Notify by email on failure
+      - name: Send email on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "❌ Deploy Failed: SharedMelody"
+          body: |
+            The deployment for SharedMelody branch 'main' has failed.
+            Check GitHub Actions logs for details.
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.SMTP_USERNAME }}
+
+      # 5. Optional: notify success
+      - name: Notify success
+        if: success()
+        run: echo "🚀 Deploy completed successfully!"
