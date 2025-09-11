@@ -20,7 +20,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           # Si tu clave tiene passphrase, usa esto:
-          ssh-passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          ssh-passphrase: "Sm12345*"
           # Si NO tiene passphrase, simplemente omite la línea o usa:
           # ssh-passphrase: ""
 
