@@ -16,11 +16,18 @@ jobs:
 
       # 2. Setup SSH (CORREGIDO)
       - name: Setup SSH
-        uses: shimataro/ssh-key-action@v2
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: "none"
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
+
+      - name: Debug secrets
+        run: |
+          echo "SSH_PASSPHRASE length: ${#SSH_PASSPHRASE}"
+          echo "SSH_PRIVATE_KEY length: ${#SSH_PRIVATE_KEY}"
+        env:
+          SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # 3. Deploy on server (MEJORADO)
       - name: Deploy to server
