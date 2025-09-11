@@ -14,12 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Setup SSH (CORREGIDO)
+      # 2. Setup SSH (CORREGIDO - parámetro correcto)
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          ssh-passphrase: ${{ secrets.SSH_PASSPHRASE }}  # ✅ CORREGIDO: ssh-passphrase
 
       - name: Debug secrets
         run: |
@@ -29,7 +29,7 @@ jobs:
           SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 3. Deploy on server (MEJORADO)
+      # 3. Deploy on server
       - name: Deploy to server
         run: |
           set -e
@@ -67,7 +67,7 @@ jobs:
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.SMTP_USERNAME }}
 
-      # 5. Notify success by email (AGREGADO)
+      # 5. Notify success by email
       - name: Send success email
         if: success()
         uses: dawidd6/action-send-mail@v3
