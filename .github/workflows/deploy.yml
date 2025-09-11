@@ -2,34 +2,27 @@ name: Deploy to Server
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Add SSH key
+      - name: Start SSH Agent and add key
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Add server to known_hosts
+      - name: Deploy to Server
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy to server
-        run: |
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-          cd ${{ secrets.DEPLOY_DIR }}
-          git fetch --all
-          git reset --hard origin/main
-          docker compose pull || true
-          docker compose build --no-cache
-          docker compose up -d --remove-orphans
-          docker image prune -f || true
+          ssh -o StrictHostKeyChecking=no deploy@109.199.123.102 << 'EOF'
+            cd ~/SharedMelody
+            git pull origin main
+            docker compose down
+            docker compose up -d --build
           EOF
