@@ -14,28 +14,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Setup SSH
+      # 2. Setup SSH (CORREGIDO)
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          ssh-passphrase: ""
+          # Si tu clave tiene passphrase, usa esto:
+          ssh-passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          # Si NO tiene passphrase, simplemente omite la línea o usa:
+          # ssh-passphrase: ""
 
-      # 3. Deploy on server
+      # 3. Deploy on server (MEJORADO)
       - name: Deploy to server
-        id: deploy
         run: |
           set -e
           ssh -o StrictHostKeyChecking=no deploy@109.199.123.102 << 'EOF'
             set -e
             cd ~/SharedMelody
+            
             echo "🔄 Pulling latest changes..."
             git fetch --all
             git reset --hard origin/main
+            
             echo "🛠 Rebuilding containers..."
             docker compose down
             docker compose up -d --build
-            echo "✅ Deployment finished"
+            
+            echo "🧹 Cleaning up unused images..."
+            docker image prune -f
+            
+            echo "✅ Deployment finished successfully!"
           EOF
 
       # 4. Notify by email on failure
@@ -54,7 +62,18 @@ jobs:
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.SMTP_USERNAME }}
 
-      # 5. Optional: notify success
-      - name: Notify success
+      # 5. Notify success by email (AGREGADO)
+      - name: Send success email
         if: success()
-        run: echo "🚀 Deploy completed successfully!"
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "✅ Deploy Successful: SharedMelody"
+          body: |
+            The deployment for SharedMelody branch 'main' was successful!
+            Application is now live.
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.SMTP_USERNAME }}
