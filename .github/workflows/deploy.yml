@@ -1,0 +1,84 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup SSH (CORREGIDO - parámetro correcto)
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-passphrase: ${{ secrets.SSH_PASSPHRASE }}  # ✅ CORREGIDO: ssh-passphrase
+
+      - name: Debug secrets
+        run: |
+          echo "SSH_PASSPHRASE length: ${#SSH_PASSPHRASE}"
+          echo "SSH_PRIVATE_KEY length: ${#SSH_PRIVATE_KEY}"
+        env:
+          SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 3. Deploy on server
+      - name: Deploy to server
+        run: |
+          set -e
+          ssh -o StrictHostKeyChecking=no deploy@109.199.123.102 << 'EOF'
+            set -e
+            cd ~/SharedMelody
+            
+            echo "🔄 Pulling latest changes..."
+            git fetch --all
+            git reset --hard origin/main
+            
+            echo "🛠 Rebuilding containers..."
+            docker compose down
+            docker compose up -d --build
+            
+            echo "🧹 Cleaning up unused images..."
+            docker image prune -f
+            
+            echo "✅ Deployment finished successfully!"
+          EOF
+
+      # 4. Notify by email on failure
+      - name: Send email on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "❌ Deploy Failed: SharedMelody"
+          body: |
+            The deployment for SharedMelody branch 'main' has failed.
+            Check GitHub Actions logs for details.
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.SMTP_USERNAME }}
+
+      # 5. Notify success by email
+      - name: Send success email
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "✅ Deploy Successful: SharedMelody"
+          body: |
+            The deployment for SharedMelody branch 'main' was successful!
+            Application is now live.
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.SMTP_USERNAME }}
