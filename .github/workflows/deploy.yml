@@ -10,19 +10,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Descarga el código del repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Start SSH Agent and add key
+      # 2. Inicia el agente SSH con tu llave privada (de GitHub Secrets)
+      - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to Server
+      # 3. Despliega al servidor
+      - name: Deploy to server
         run: |
           ssh -o StrictHostKeyChecking=no deploy@109.199.123.102 << 'EOF'
+            set -e
             cd ~/SharedMelody
-            git pull origin main
+
+            echo "Pulling latest changes..."
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "Rebuilding containers..."
             docker compose down
             docker compose up -d --build
+
+            echo "Deployment finished ✅"
           EOF
