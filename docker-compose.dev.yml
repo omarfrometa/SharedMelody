@@ -12,8 +12,9 @@ services:
   backend:
     build:
       target: build  # Use build stage instead of production
+    env_file:
+      - ./backend/.env.development
     environment:
-      NODE_ENV: development
       # Enable debug logging
       DEBUG: "app:*"
     volumes:
@@ -33,10 +34,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: build  # Use build stage for development
+    env_file:
+      - ./frontend/.env.development
     environment:
-      - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true  # Enable polling for file watching in containers
-      - REACT_APP_API_URL=http://localhost:3001
     volumes:
       # Mount source code for hot reloading
       - ./frontend/src:/app/src:ro

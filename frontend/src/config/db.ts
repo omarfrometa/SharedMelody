@@ -1,16 +1,30 @@
+// =============================================
+// CONFIGURACIÓN DE BASE DE DATOS - FRONTEND
+// Nota: En React, las variables de entorno deben empezar con REACT_APP_
+// Este archivo generalmente NO se usaría en el frontend ya que
+// el frontend no se conecta directamente a la base de datos,
+// sino que se conecta a través del API backend.
+// =============================================
+
 export const dbConfig = {
-  host: '154.12.227.234',
-  database: 'sharedmelody_db',
-  port: 5432,
-  username: 'postgresroot',
-  password: '69dMb7HBjJLL',
+  // Estas variables generalmente no se usan en el frontend,
+  // pero se mantienen por compatibilidad si fuesen necesarias
+  host: process.env.REACT_APP_DB_HOST || 'localhost',
+  database: process.env.REACT_APP_DB_NAME || 'sharedmelody_db',
+  port: parseInt(process.env.REACT_APP_DB_PORT || '5432'),
+  username: process.env.REACT_APP_DB_USER || 'postgres',
+  password: process.env.REACT_APP_DB_PASSWORD || '',
   pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
+    max: parseInt(process.env.REACT_APP_DB_POOL_MAX || '5'),
+    min: parseInt(process.env.REACT_APP_DB_POOL_MIN || '0'),
+    acquire: parseInt(process.env.REACT_APP_DB_ACQUIRE_TIMEOUT || '30000'),
+    idle: parseInt(process.env.REACT_APP_DB_IDLE_TIMEOUT || '10000')
   }
 };
+
+// ADVERTENCIA: En aplicaciones React normales, el frontend NO debe
+// conectarse directamente a la base de datos por razones de seguridad.
+// Todas las operaciones de base de datos deben hacerse a través del backend API.
 
 // Esquema de Base de Datos PostgreSQL para SharedMelody
 export const DATABASE_SCHEMA = `

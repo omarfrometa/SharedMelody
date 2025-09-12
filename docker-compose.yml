@@ -15,32 +15,8 @@ services:
     build: ./backend
     container_name: sharedmelody_backend
     restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      PORT: 3001
-      FRONTEND_URL: https://sharedmelody.com
-      DB_HOST: 154.12.227.234
-      DB_PORT: 5432
-      DB_NAME: sharedmelody_db
-      DB_USER: postgresroot
-      DB_PASSWORD: 69dMb7HBjJLL
-      DB_SSL: "false"
-      DB_SSLMODE: "disable"
-      JWT_SECRET: shared-melody-super-secret-jwt-key-2024
-      JWT_EXPIRES_IN: 24h
-      JWT_REFRESH_SECRET: shared-melody-super-secret-refresh-key-2024
-      JWT_REFRESH_EXPIRES_IN: 7d
-      GOOGLE_CLIENT_ID: 191069086328-ih31gmnmqq5sl2134dumg7ff0h8bnfbo.apps.googleusercontent.com
-      GOOGLE_CLIENT_SECRET: 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
-      MICROSOFT_CLIENT_ID: "DISABLED"
-      MICROSOFT_CLIENT_SECRET: "DISABLED"
-      APPLE_CLIENT_ID: "DISABLED"
-      APPLE_TEAM_ID: "DISABLED"
-      APPLE_KEY_ID: "DISABLED"
-      APPLE_PRIVATE_KEY_PATH: "DISABLED"
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: redis_secure_password_123
+    env_file:
+      - ./backend/.env.production
     ports:
       - "3001:3001"
     depends_on:
@@ -58,9 +34,8 @@ services:
       - "3000:3000"
     depends_on:
       - backend
-    environment:
-      - REACT_APP_API_URL=https://api.sharedmelody.com/api
-      - REACT_APP_APP_NAME=SharedMelody
+    env_file:
+      - ./frontend/.env.production
     restart: always
     networks:
       - sharedmelody_network
