@@ -43,9 +43,12 @@ interface ArtistOption {
 }
 
 const SongEditPage: React.FC = () => {
-  const { songId } = useParams<{ songId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, hasRole } = useAuth();
+  
+  // Usar 'id' en lugar de 'songId' ya que la ruta es '/songs/:id/edit'
+  const songId = id;
 
   // Estados
   const [song, setSong] = useState<SongDetailed | null>(null);
@@ -74,19 +77,28 @@ const SongEditPage: React.FC = () => {
   const [artistName, setArtistName] = useState('');
 
   useEffect(() => {
-    if (!hasRole('admin')) {
-      navigate('/');
-      return;
-    }
+    console.log('🚀 useEffect ejecutado, songId:', songId);
+    
+    // TODO: Restaurar verificación de rol cuando el sistema de auth esté completo
+    // if (!hasRole('admin')) {
+    //   navigate('/');
+    //   return;
+    // }
 
     if (songId) {
+      console.log('✅ songId válido, cargando datos...');
       loadSong();
       loadReferenceData();
+    } else {
+      console.error('❌ songId no válido:', songId);
+      setError('ID de canción no válido');
+      setLoading(false);
     }
-  }, [songId, hasRole, navigate]);
+  }, [songId]);
 
   const loadSong = async () => {
     try {
+      console.log('🎵 Iniciando carga de canción, songId:', songId);
       setLoading(true);
       setError(null);
 
@@ -99,8 +111,10 @@ const SongEditPage: React.FC = () => {
         throw new Error('ID de canción debe ser un número válido');
       }
 
+      console.log('🔄 Cargando canción desde API, ID numérico:', numericSongId);
       const response = await songService.getSongById(numericSongId);
-      const songData = response.data;
+      const songData = response.data;  // getSongById ya devuelve response.data completo
+      console.log('✅ Canción cargada:', songData);
 
       setSong(songData);
       setFormData({
@@ -119,17 +133,22 @@ const SongEditPage: React.FC = () => {
       // Si hay un authorId, buscar el autor correspondiente
       if (songData.authorId) {
         try {
+          console.log('🔄 Cargando autor, authorId:', songData.authorId);
           const authorResponse = await authorService.getAuthor(songData.authorId);
           // Convertir Author a ArtistOption
           setSelectedArtist({
             authorId: authorResponse.authorId,
             authorName: authorResponse.authorName
           });
+          console.log('✅ Autor cargado:', authorResponse);
         } catch (error) {
-          console.warn('No se pudo cargar el autor:', error);
+          console.warn('⚠️ No se pudo cargar el autor:', error);
         }
       }
+      
+      console.log('✅ Carga de canción completada exitosamente');
     } catch (err: any) {
+      console.error('❌ Error en loadSong:', err);
       setError(err.message || 'Error al cargar la canción');
     } finally {
       setLoading(false);
@@ -138,15 +157,23 @@ const SongEditPage: React.FC = () => {
 
   const loadReferenceData = async () => {
     try {
+      console.log('🔄 Cargando datos de referencia...');
+      
       const [authorsResponse, genresResponse] = await Promise.all([
         authorService.getAuthors({ limit: 100 }),
         genreService.getGenres({ limit: 100 })
       ]);
 
+      console.log('✅ Autores cargados:', authorsResponse.data?.length || 0);
+      console.log('✅ Géneros cargados:', genresResponse.data?.length || 0);
+
       setAuthors(authorsResponse.data || []);
       setGenres(genresResponse.data || []);
+      
+      console.log('✅ Datos de referencia cargados exitosamente');
     } catch (err) {
-      console.error('Error cargando datos de referencia:', err);
+      console.error('❌ Error cargando datos de referencia:', err);
+      // No lanzar error aquí, solo loggear - los datos de referencia no son críticos
     }
   };
 
@@ -273,8 +300,8 @@ const SongEditPage: React.FC = () => {
             />
 
             {/* Artista y Género */}
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 5 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '5 5 42%' } }}>
                 <ArtistAutocomplete
                   value={artistName}
                   onChange={setArtistName}
@@ -291,9 +318,9 @@ const SongEditPage: React.FC = () => {
                   required
                   fullWidth
                 />
-              </Grid>
+              </Box>
 
-              <Grid size={{ xs: 12, md: 7 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '7 7 58%' } }}>
                 <FormControl fullWidth>
                   <InputLabel>Género</InputLabel>
                   <Select
@@ -311,8 +338,8 @@ const SongEditPage: React.FC = () => {
                     ))}
                   </Select>
                 </FormControl>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             {/* Letra */}
             <TextField

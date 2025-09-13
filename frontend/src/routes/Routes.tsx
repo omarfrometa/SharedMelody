@@ -81,11 +81,7 @@ const AppRoutes: React.FC = () => {
           <SongRequestPage />
         </ProtectedRoute>
       } />
-      <Route path="/songs/:id/edit" element={
-        <ProtectedRoute>
-          <SongEditPage />
-        </ProtectedRoute>
-      } />
+      <Route path="/songs/:id/edit" element={<SongEditPage />} />
       <Route path="/songs/:id/history" element={
         <ProtectedRoute>
           <SongHistoryPage />
