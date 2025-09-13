@@ -48,35 +48,196 @@ export const viewTrackingService = {
   // Registrar una visualización
   async recordView(
     songId: number,
-    ipAddress: string,
+    ipAddressPublic: string,
     userId?: number,
     userAgent?: string,
     sessionId?: string,
-    referrer?: string
+    referrer?: string,
+    ipAddressPrivate?: string
   ): Promise<boolean> {
+    console.log('🚀 TRACKING COMPLETO: Iniciando registro completo de visita...');
+    
     try {
-      const query = `SELECT record_song_view($1, $2, $3, $4, $5, $6)`;
-      const result = await pool.query(query, [
+      // 1. Crear tabla de logs independiente (sin relación con songs)
+      const createLogTableQuery = `
+        CREATE TABLE IF NOT EXISTS visit_logs (
+          id SERIAL PRIMARY KEY,
+          song_id INTEGER NOT NULL,
+          ip_address VARCHAR(45) NOT NULL,
+          visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          user_agent TEXT,
+          session_id VARCHAR(255),
+          referrer TEXT,
+          date_only DATE DEFAULT CURRENT_DATE
+        )
+      `;
+      
+      await pool.query(createLogTableQuery);
+      console.log('✅ Tabla visit_logs verificada/creada');
+
+      // 2. VERIFICAR DUPLICADOS: Evitar registros duplicados en los últimos 30 segundos
+      const duplicateCheckQuery = `
+        SELECT id, visited_at
+        FROM visit_logs
+        WHERE song_id = $1
+          AND ip_address = $2
+          AND visited_at > (CURRENT_TIMESTAMP - INTERVAL '30 seconds')
+        ORDER BY visited_at DESC
+        LIMIT 1
+      `;
+      
+      const duplicateCheck = await pool.query(duplicateCheckQuery, [songId, ipAddressPublic]);
+      
+      if (duplicateCheck.rows.length > 0) {
+        const lastVisit = duplicateCheck.rows[0];
+        console.log('⚠️ DUPLICADO DETECTADO: Visita reciente encontrada', {
+          songId,
+          ip: ipAddressPublic,
+          lastVisitId: lastVisit.id,
+          lastVisitTime: lastVisit.visited_at,
+          message: 'Saltando registro para evitar duplicados'
+        });
+        return false; // No registrar duplicado
+      }
+
+      console.log('✅ No hay duplicados recientes, procediendo con el registro...');
+
+      // 3. Insertar log de visita
+      const insertLogQuery = `
+        INSERT INTO visit_logs (song_id, ip_address, user_agent, session_id, referrer)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, visited_at
+      `;
+      
+      const logResult = await pool.query(insertLogQuery, [
         songId,
-        ipAddress,
-        userId || null,
+        ipAddressPublic,
         userAgent || null,
         sessionId || null,
         referrer || null
       ]);
-
-      const wasRecorded = result.rows[0]?.record_song_view || false;
       
-      if (wasRecorded) {
-        console.log(`📊 Nueva visualización registrada: Canción ${songId} desde IP ${ipAddress}`);
-      } else {
-        console.log(`📊 Visualización duplicada ignorada: Canción ${songId} desde IP ${ipAddress} (mismo día)`);
+      console.log('✅ Log registrado:', {
+        logId: logResult.rows[0]?.id,
+        timestamp: logResult.rows[0]?.visited_at
+      });
+
+      // 4. Actualizar contador plays_count en tabla songs
+      try {
+        const updateSongQuery = `
+          UPDATE songs
+          SET plays_count = COALESCE(plays_count, 0) + 1
+          WHERE song_id = $1
+          RETURNING song_id, plays_count
+        `;
+        
+        const songResult = await pool.query(updateSongQuery, [songId]);
+        console.log('✅ Contador songs actualizado:', {
+          songId: songResult.rows[0]?.song_id,
+          newCount: songResult.rows[0]?.plays_count
+        });
+      } catch (error) {
+        console.error('⚠️ Error actualizando contador songs:', (error as any).message);
       }
 
-      return wasRecorded;
+      // 5. Insertar en song_views
+      try {
+        const insertViewQuery = `
+          INSERT INTO song_views (
+            view_id, song_id, user_id, ip_address_public, ip_address_private,
+            user_agent, session_id, referrer, viewed_at, created_date
+          ) VALUES (
+            gen_random_uuid(), $1, $2, $3::inet, $4::inet,
+            $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_DATE
+          )
+          RETURNING view_id
+        `;
+        
+        const viewResult = await pool.query(insertViewQuery, [
+          songId,
+          userId || null,
+          ipAddressPublic,
+          ipAddressPrivate || ipAddressPublic,
+          userAgent || null,
+          sessionId || null,
+          referrer || null
+        ]);
+        
+        console.log('✅ Vista detallada registrada:', {
+          viewId: viewResult.rows[0]?.view_id
+        });
+      } catch (error) {
+        console.error('⚠️ Error insertando en song_views:', (error as any).message);
+      }
+
+      // 6. Actualizar/crear unique_visitors
+      try {
+        // Primero verificar si ya existe el visitante
+        const checkVisitorQuery = `
+          SELECT visitor_id, total_visits
+          FROM unique_visitors
+          WHERE ip_address_public = $1::inet
+        `;
+        
+        const existingVisitor = await pool.query(checkVisitorQuery, [ipAddressPublic]);
+        
+        if (existingVisitor.rows.length > 0) {
+          // Actualizar visitante existente
+          const updateVisitorQuery = `
+            UPDATE unique_visitors
+            SET
+              last_visit_date = CURRENT_DATE,
+              total_visits = total_visits + 1,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE ip_address_public = $1::inet
+            RETURNING visitor_id, total_visits
+          `;
+          
+          const visitorResult = await pool.query(updateVisitorQuery, [ipAddressPublic]);
+          console.log('✅ Visitante existente actualizado:', {
+            visitorId: visitorResult.rows[0]?.visitor_id,
+            totalVisits: visitorResult.rows[0]?.total_visits
+          });
+        } else {
+          // Crear nuevo visitante
+          const insertVisitorQuery = `
+            INSERT INTO unique_visitors (
+              visitor_id, ip_address_public, ip_address_private, user_id,
+              first_visit_date, last_visit_date, total_visits, created_at, updated_at
+            ) VALUES (
+              gen_random_uuid(), $1::inet, $2::inet, $3,
+              CURRENT_DATE, CURRENT_DATE, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
+            RETURNING visitor_id, total_visits
+          `;
+          
+          const visitorResult = await pool.query(insertVisitorQuery, [
+            ipAddressPublic,
+            ipAddressPrivate || ipAddressPublic,
+            userId || null
+          ]);
+          
+          console.log('✅ Nuevo visitante creado:', {
+            visitorId: visitorResult.rows[0]?.visitor_id,
+            totalVisits: visitorResult.rows[0]?.total_visits
+          });
+        }
+      } catch (error) {
+        console.error('⚠️ Error gestionando unique_visitors:', (error as any).message);
+      }
+
+      console.log('🎉 TRACKING COMPLETO EXITOSO para canción:', songId);
+      return true;
+
     } catch (error) {
-      console.error('Error al registrar visualización:', error);
-      throw createError('Error al registrar visualización', 500);
+      console.error('❌ Error en tracking completo:', {
+        songId,
+        error: (error as any).message,
+        code: (error as any).code
+      });
+      
+      // Incluso si falla, no romper la aplicación
+      return false;
     }
   },
 

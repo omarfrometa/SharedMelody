@@ -24,12 +24,18 @@ export const captureClientIP = (req: Request, res: Response, next: NextFunction)
     ];
 
     let clientIP: string | undefined;
+    let originalIP: string | undefined;
 
-    // Buscar la primera IP válida
+    // Buscar la primera IP válida y guardar la IP original
     for (const source of ipSources) {
       if (source && typeof source === 'string') {
         // Si hay múltiples IPs (x-forwarded-for), tomar la primera (IP original del cliente)
         const ip = source.split(',')[0].trim();
+        
+        // Guardar la IP original (privada) para reference
+        if (!originalIP) {
+          originalIP = ip;
+        }
 
         // En desarrollo, simular IP externa si es privada
         if (process.env.NODE_ENV === 'development' && isPrivateIP(ip)) {
@@ -56,17 +62,20 @@ export const captureClientIP = (req: Request, res: Response, next: NextFunction)
       }
     }
 
-    (req as any).clientIP = clientIP;
+    // Guardar ambas IPs en el request
+    (req as any).clientIP = clientIP; // IP pública (real o simulada)
+    (req as any).originalIP = originalIP; // IP original (puede ser privada)
 
     // Log para debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🌐 External IP captured: ${(req as any).clientIP} for ${req.method} ${req.path}`);
+      console.log(`🌐 IPs captured - Public: ${(req as any).clientIP}, Original: ${(req as any).originalIP} for ${req.method} ${req.path}`);
     }
 
     next();
   } catch (error) {
     console.error('Error capturing client IP:', error);
     (req as any).clientIP = process.env.NODE_ENV === 'development' ? getSimulatedExternalIP() : '127.0.0.1';
+    (req as any).originalIP = null;
     next();
   }
 };
@@ -125,7 +134,8 @@ function isPrivateIP(ip: string): boolean {
  */
 export const getRequestInfo = (req: Request) => {
   return {
-    ip: (req as any).clientIP || '127.0.0.1',
+    ipPublic: (req as any).clientIP || '127.0.0.1',
+    ipPrivate: (req as any).originalIP || null,
     userAgent: req.headers['user-agent'] || '',
     referrer: req.headers.referer || req.headers.referrer || '',
     sessionId: req.sessionID || '',
@@ -166,7 +176,7 @@ export const logImportantRequest = (req: Request, _res: Response, next: NextFunc
 
   // Log solo para rutas importantes (canciones, etc.)
   if (req.path.includes('/songs/') && req.method === 'GET') {
-    console.log(`📊 Important request: ${info.method} ${info.path} from ${info.ip}`);
+    console.log(`📊 Important request: ${info.method} ${info.path} from ${info.ipPublic}`);
   }
 
   next();

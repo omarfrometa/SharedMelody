@@ -75,7 +75,8 @@ export const getSongById = async (req: Request, res: Response, next: NextFunctio
 
     // Registrar visualización automáticamente
     try {
-      const ipAddress = (req as any).clientIP || '127.0.0.1';
+      const ipAddressPublic = (req as any).clientIP || '127.0.0.1';
+      const ipAddressPrivate = (req as any).originalIP || null;
       const userAgent = req.headers['user-agent'] || '';
       const sessionId = req.sessionID || '';
       const referrer = (req.headers.referer || req.headers.referrer || '') as string;
@@ -83,17 +84,49 @@ export const getSongById = async (req: Request, res: Response, next: NextFunctio
       // TODO: Obtener userId del token de autenticación cuando esté implementado
       // const userId = req.user?.userId;
 
+      console.log('🎵 Registrando visualización de canción:', {
+        songId: id,
+        songIdType: typeof id,
+        ipPublic: ipAddressPublic,
+        ipPrivate: ipAddressPrivate,
+        userAgent: userAgent?.substring(0, 50) + '...',
+        sessionId: sessionId?.substring(0, 20) + '...',
+        referrer
+      });
+
+      // Verificar si el ID es numérico o UUID
+      let numericSongId: number;
+      
+      if (isNaN(parseInt(id))) {
+        console.log('⚠️ ID no es numérico, intentando buscar por UUID:', id);
+        // Si no es numérico, puede ser UUID, necesitamos convertir o buscar
+        // Por ahora, usaremos hash del UUID como ID numérico
+        numericSongId = Math.abs(id.split('').reduce((a, b) => {
+          a = ((a << 5) - a) + b.charCodeAt(0);
+          return a & a;
+        }, 0));
+        console.log('🔢 ID numérico generado:', numericSongId);
+      } else {
+        numericSongId = parseInt(id);
+        console.log('🔢 ID numérico directo:', numericSongId);
+      }
+
       await viewTrackingService.recordView(
-        parseInt(id),
-        ipAddress,
+        numericSongId,
+        ipAddressPublic,
         undefined, // userId
         userAgent,
         sessionId,
-        referrer
+        referrer,
+        ipAddressPrivate
       );
     } catch (viewError) {
       // No fallar la respuesta si hay error en el tracking
-      console.error('Error al registrar visualización:', viewError);
+      console.error('❌ Error al registrar visualización:', {
+        songId: id,
+        error: (viewError as any).message,
+        stack: (viewError as any).stack
+      });
     }
 
     res.json({
