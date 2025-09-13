@@ -530,21 +530,76 @@ export const songService = {
   // Eliminar canción
   async deleteSong(songId: string): Promise<void> {
     try {
-      const query = `
+      console.log('🗑️ Intentando eliminar canción con ID:', songId, 'Tipo:', typeof songId);
+      
+      // Primero verificar si existen versiones de la canción
+      const checkVersionsQuery = `
+        SELECT COUNT(*) as count
+        FROM public.song_versions
+        WHERE song_id = $1
+      `;
+
+      console.log('🔍 Verificando si existen versiones de la canción...');
+      const versionsCheck = await pool.query(checkVersionsQuery, [songId]);
+      const versionCount = parseInt(versionsCheck.rows[0].count);
+      console.log('🔍 Número de versiones encontradas:', versionCount);
+
+      // Si hay versiones, eliminarlas primero
+      if (versionCount > 0) {
+        console.log('🗑️ Eliminando versiones de la canción...');
+        const deleteVersionsQuery = `
+          DELETE FROM public.song_versions
+          WHERE song_id = $1
+        `;
+
+        const versionsResult = await pool.query(deleteVersionsQuery, [songId]);
+        console.log('🔍 Versiones eliminadas:', versionsResult.rowCount);
+
+        // Verificar que todas las versiones fueron eliminadas
+        if (versionsResult.rowCount !== versionCount) {
+          console.log('❌ Error: No se pudieron eliminar todas las versiones');
+          throw createError('Error al eliminar las versiones de la canción', 500);
+        }
+
+        console.log('✅ Todas las versiones fueron eliminadas exitosamente');
+      } else {
+        console.log('ℹ️ No se encontraron versiones para eliminar');
+      }
+
+      // Solo después de confirmar que las versiones fueron eliminadas, eliminar la canción principal
+      const deleteSongQuery = `
         DELETE FROM songs
         WHERE song_id = $1
         RETURNING song_id
       `;
 
-      const result = await pool.query(query, [songId]);
+      console.log('🔍 Ejecutando query de eliminación de canción:', deleteSongQuery);
+      console.log('🔍 Parámetros:', [songId]);
+      
+      const result = await pool.query(deleteSongQuery, [songId]);
+      
+      console.log('🔍 Resultado del query:', result.rows);
+      console.log('🔍 Número de filas afectadas:', result.rowCount);
 
       if (result.rows.length === 0) {
+        console.log('❌ No se encontró canción con ID:', songId);
         throw createError('Canción no encontrada', 404);
       }
 
-      console.log('✅ Canción eliminada:', songId);
+      console.log('✅ Canción eliminada exitosamente después de eliminar sus versiones:', songId);
     } catch (error) {
-      console.error('❌ Error al eliminar canción:', error);
+      console.error('❌ Error detallado al eliminar canción:', {
+        message: (error as any).message,
+        stack: (error as any).stack,
+        code: (error as any).code,
+        detail: (error as any).detail
+      });
+      
+      // Re-lanzar el error original si es un error de createError
+      if ((error as any).statusCode) {
+        throw error;
+      }
+      
       throw createError('Error al eliminar canción', 500);
     }
   }

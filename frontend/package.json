@@ -57,5 +57,5 @@
     "@types/jest": "^30.0.0",
     "jest": "^30.0.2"
   },
-  "proxy": "https://sharedmelody.com:3001"
+  "proxy": "http://localhost:3001"
 }
