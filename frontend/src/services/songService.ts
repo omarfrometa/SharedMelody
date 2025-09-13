@@ -234,7 +234,7 @@ export const songService = {
   },
 
   // Obtener canciones destacadas con información completa
-  async getFeaturedSongs(limit: number = 4): Promise<SongDetailed[]> {
+  async getFeaturedSongs(limit: number = 5): Promise<SongDetailed[]> {
     try {
       // Usar el mismo endpoint que en la homepage para consistencia
       const response = await apiClient.get<PaginatedResponse<SongDetailed>>('/songs');

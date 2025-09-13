@@ -106,7 +106,7 @@ const HomePage = () => {
                 <ListItemIcon sx={{ minWidth: 36 }}>
                   <TrendingUpIcon sx={{ fontSize: 18, color: colors.primary[600] }} />
                 </ListItemIcon>
-                <ListItemText primary="Mais tocadas" />
+                <ListItemText primary="Más Visitadas" />
               </ListItem>
               <ListItem sx={{ ...customStyles.sidebarLink, cursor: 'pointer' }}>
                 <ListItemIcon sx={{ minWidth: 36 }}>
@@ -118,13 +118,13 @@ const HomePage = () => {
                 <ListItemIcon sx={{ minWidth: 36 }}>
                   <HistoryIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
                 </ListItemIcon>
-                <ListItemText primary="Histórico" />
+                <ListItemText primary="Historico" />
               </ListItem>
               <ListItem sx={{ ...customStyles.sidebarLink, cursor: 'pointer' }}>
                 <ListItemIcon sx={{ minWidth: 36 }}>
                   <AccessTimeIcon sx={{ fontSize: 18, color: colors.secondary[500] }} />
                 </ListItemIcon>
-                <ListItemText primary="Tocadas recentemente" />
+                <ListItemText primary="Más Recientes" />
               </ListItem>
             </List>
 
@@ -435,7 +435,7 @@ const HomePage = () => {
             </Box>
             <Box sx={{ p: 2 }}>
               {isLoadingFeatured ? (
-                [...Array(4)].map((_, index) => (
+                [...Array(5)].map((_, index) => (
                   <Box key={index} sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -509,30 +509,9 @@ const HomePage = () => {
                         {song.title}
                       </Typography>
                       <Typography variant="caption" sx={{ color: colors.secondary[600] }}>
-                        {song.artistName} • {(song.viewCount || 0).toLocaleString()} visualizaciones
+                        {song.artistName} <br/> {(song.viewCount || 0).toLocaleString()} visualizaciones
                       </Typography>
                     </Box>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        fontSize: '0.75rem',
-                        py: 0.5,
-                        px: 1.5,
-                        borderColor: colors.primary[600],
-                        color: colors.primary[600],
-                        '&:hover': {
-                          backgroundColor: colors.primary[600],
-                          color: 'white'
-                        }
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/artist/${encodeURIComponent(song.artistName)}`);
-                      }}
-                    >
-                      Ver Artista
-                    </Button>
                   </Box>
                 ))
               )}
