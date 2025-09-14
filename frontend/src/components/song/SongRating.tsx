@@ -37,6 +37,7 @@ interface SongRatingProps {
   ratingCount?: number;
   showRatingsList?: boolean;
   compact?: boolean;
+  onRatingStatsChange?: (averageRating: number, ratingCount: number) => void;
 }
 
 interface RatingWithUser extends SongRatingType {
@@ -47,10 +48,11 @@ interface RatingWithUser extends SongRatingType {
 
 const SongRating: React.FC<SongRatingProps> = ({
   songId,
-  averageRating = 0,
-  ratingCount = 0,
+  averageRating: initialAverageRating = 0,
+  ratingCount: initialRatingCount = 0,
   showRatingsList = true,
-  compact = false
+  compact = false,
+  onRatingStatsChange
 }) => {
   const { user, isAuthenticated } = useAuth();
   
@@ -60,6 +62,10 @@ const SongRating: React.FC<SongRatingProps> = ({
   const [reviewComment, setReviewComment] = useState<string>('');
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [ratings, setRatings] = useState<RatingWithUser[]>([]);
+  
+  // Estados para estadísticas calculadas
+  const [averageRating, setAverageRating] = useState<number>(initialAverageRating);
+  const [ratingCount, setRatingCount] = useState<number>(initialRatingCount);
   
   // Estados de carga
   const [loading, setLoading] = useState<boolean>(false);
@@ -118,10 +124,36 @@ const SongRating: React.FC<SongRatingProps> = ({
     try {
       setLoadingRatings(true);
       const ratingsData = await songService.getSongRatings(songId.toString());
-      setRatings(ratingsData.data || []);
+      const loadedRatings = ratingsData.data || [];
+      setRatings(loadedRatings);
+      
+      // Calcular estadísticas
+      let newAverageRating = 0;
+      let newRatingCount = 0;
+      
+      if (loadedRatings.length > 0) {
+        const totalRating = loadedRatings.reduce((sum: number, rating: any) => sum + rating.rating, 0);
+        newAverageRating = totalRating / loadedRatings.length;
+        newRatingCount = loadedRatings.length;
+      }
+      
+      setAverageRating(newAverageRating);
+      setRatingCount(newRatingCount);
+      
+      // Notificar al componente padre sobre los cambios
+      if (onRatingStatsChange) {
+        onRatingStatsChange(newAverageRating, newRatingCount);
+      }
     } catch (error: any) {
       console.error('Error al cargar ratings:', error);
       setRatings([]);
+      setAverageRating(0);
+      setRatingCount(0);
+      
+      // Notificar al componente padre los valores en 0
+      if (onRatingStatsChange) {
+        onRatingStatsChange(0, 0);
+      }
     } finally {
       setLoadingRatings(false);
     }

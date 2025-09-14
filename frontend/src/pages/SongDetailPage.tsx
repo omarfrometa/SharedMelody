@@ -106,6 +106,10 @@ const SongDetailPage: React.FC = () => {
   const [showDetailedStats, setShowDetailedStats] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  
+  // Estados para las estadísticas de rating actualizadas
+  const [currentAverageRating, setCurrentAverageRating] = useState(0);
+  const [currentRatingCount, setCurrentRatingCount] = useState(0);
 
   // Estados para el menú flotante
   const [fontSize, setFontSize] = useState(16);
@@ -585,6 +589,12 @@ const SongDetailPage: React.FC = () => {
     window.print();
   };
 
+  // Callback para recibir actualizaciones de estadísticas del componente SongRating
+  const handleRatingStatsChange = (averageRating: number, ratingCount: number) => {
+    setCurrentAverageRating(averageRating);
+    setCurrentRatingCount(ratingCount);
+  };
+
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -665,13 +675,13 @@ const SongDetailPage: React.FC = () => {
 
               <Box display="flex" alignItems="center" gap={2} mb={2}>
                 <Rating
-                  value={song.averageRating}
+                  value={currentAverageRating || song.averageRating}
                   precision={0.1}
                   readOnly
                   size="small"
                 />
                 <Typography variant="body2">
-                  {song.averageRating.toFixed(1)} ({song.ratingCount} valoraciones)
+                  {(currentAverageRating || song.averageRating).toFixed(1)} ({currentRatingCount || song.ratingCount} valoraciones)
                 </Typography>
               </Box>
 
@@ -818,7 +828,7 @@ const SongDetailPage: React.FC = () => {
           onClick={() => setActiveTab(2)} // Cambiar a la pestaña de comentarios/rating
           >
             <ThumbUpIcon color="inherit" />
-            <Typography variant="h6">{song.ratingCount || 0}</Typography>
+            <Typography variant="h6">{currentRatingCount || song.ratingCount || 0}</Typography>
             <Typography variant="body2">Valoraciones</Typography>
           </Paper>
         </Box>
@@ -1172,6 +1182,7 @@ const SongDetailPage: React.FC = () => {
             ratingCount={song.ratingCount}
             showRatingsList={true}
             compact={false}
+            onRatingStatsChange={handleRatingStatsChange}
           />
         </TabPanel>
       </Card>
