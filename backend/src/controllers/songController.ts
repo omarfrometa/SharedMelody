@@ -218,6 +218,140 @@ export const getSongVersion = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+// Calificar canción
+export const rateSong = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { rating, reviewComment } = req.body;
+    
+    // TODO: Obtener userId del token de autenticación
+    // const userId = req.user?.userId;
+    const userId = 1; // Por ahora usamos un ID fijo para testing
+
+    if (!rating || rating < 1 || rating > 5) {
+      throw createError('El rating debe estar entre 1 y 5', 400);
+    }
+
+    const result = await songService.rateSong(id, userId, rating, reviewComment);
+
+    res.json({
+      success: true,
+      data: result,
+      message: 'Canción calificada exitosamente'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Obtener rating del usuario para una canción
+export const getUserRating = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    
+    // TODO: Obtener userId del token de autenticación
+    // const userId = req.user?.userId;
+    const userId = 1; // Por ahora usamos un ID fijo para testing
+
+    const rating = await songService.getUserRating(id, userId);
+
+    if (!rating) {
+      res.status(404).json({
+        success: false,
+        message: 'No has calificado esta canción'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: rating
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Obtener todos los ratings de una canción
+export const getSongRatings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const result = await songService.getSongRatings(id, page, limit);
+
+    res.json({
+      success: true,
+      data: result.ratings,
+      pagination: result.pagination
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Dar like a una canción
+export const likeSong = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    
+    // TODO: Obtener userId del token de autenticación
+    // const userId = req.user?.userId;
+    const userId = 1; // Por ahora usamos un ID fijo para testing
+
+    const result = await songService.likeSong(id, userId);
+
+    res.json({
+      success: true,
+      data: result,
+      message: 'Me gusta agregado exitosamente'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Quitar like de una canción
+export const unlikeSong = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    
+    // TODO: Obtener userId del token de autenticación
+    // const userId = req.user?.userId;
+    const userId = 1; // Por ahora usamos un ID fijo para testing
+
+    await songService.unlikeSong(id, userId);
+
+    res.json({
+      success: true,
+      message: 'Me gusta removido exitosamente'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Verificar si el usuario dio like a una canción
+export const checkIfLiked = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    
+    // TODO: Obtener userId del token de autenticación
+    // const userId = req.user?.userId;
+    const userId = 1; // Por ahora usamos un ID fijo para testing
+
+    const liked = await songService.checkIfLiked(id, userId);
+
+    res.json({
+      success: true,
+      data: { liked }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Eliminar canción (solo admins)
 export const deleteSong = async (req: Request, res: Response, next: NextFunction) => {
   try {

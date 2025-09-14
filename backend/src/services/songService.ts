@@ -602,5 +602,246 @@ export const songService = {
       
       throw createError('Error al eliminar canción', 500);
     }
+  },
+
+  // Calificar canción
+  async rateSong(songId: string, userId: number, rating: number, reviewComment?: string): Promise<any> {
+    try {
+      // Verificar que el rating esté entre 1 y 5
+      if (rating < 1 || rating > 5) {
+        throw createError('El rating debe estar entre 1 y 5', 400);
+      }
+
+      // Verificar si el usuario ya calificó esta canción
+      const existingRating = await pool.query(`
+        SELECT rating_id FROM song_ratings
+        WHERE song_id = $1 AND user_id = $2
+      `, [songId, userId]);
+
+      let result;
+      
+      if (existingRating.rows.length > 0) {
+        // Actualizar rating existente
+        const updateQuery = `
+          UPDATE song_ratings
+          SET rating = $1, review_comment = $2, updated_at = NOW()
+          WHERE song_id = $3 AND user_id = $4
+          RETURNING rating_id as "ratingId", song_id as "songId",
+                    user_id as "userId", rating, review_comment as "reviewComment",
+                    created_at as "createdAt", updated_at as "updatedAt"
+        `;
+        result = await pool.query(updateQuery, [rating, reviewComment, songId, userId]);
+      } else {
+        // Crear nuevo rating
+        const insertQuery = `
+          INSERT INTO song_ratings (song_id, user_id, rating, review_comment)
+          VALUES ($1, $2, $3, $4)
+          RETURNING rating_id as "ratingId", song_id as "songId",
+                    user_id as "userId", rating, review_comment as "reviewComment",
+                    created_at as "createdAt", updated_at as "updatedAt"
+        `;
+        result = await pool.query(insertQuery, [songId, userId, rating, reviewComment]);
+      }
+
+      // Actualizar el promedio de rating de la canción
+      await this.updateSongRatingStats(songId);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error al calificar canción:', error);
+      throw createError('Error al calificar canción', 500);
+    }
+  },
+
+  // Obtener rating del usuario para una canción
+  async getUserRating(songId: string, userId: number): Promise<any | null> {
+    try {
+      const query = `
+        SELECT
+          sr.rating_id as "ratingId",
+          sr.song_id as "songId",
+          sr.user_id as "userId",
+          sr.rating,
+          sr.review_comment as "reviewComment",
+          sr.created_at as "createdAt",
+          sr.updated_at as "updatedAt",
+          u.username,
+          u.first_name as "firstName",
+          u.last_name as "lastName"
+        FROM song_ratings sr
+        LEFT JOIN users u ON sr.user_id = u.user_id
+        WHERE sr.song_id = $1 AND sr.user_id = $2
+      `;
+      
+      const result = await pool.query(query, [songId, userId]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error al obtener rating del usuario:', error);
+      throw createError('Error al obtener rating del usuario', 500);
+    }
+  },
+
+  // Obtener todos los ratings de una canción
+  async getSongRatings(songId: string, page: number = 1, limit: number = 10): Promise<any> {
+    try {
+      const offset = (page - 1) * limit;
+      
+      const query = `
+        SELECT
+          sr.rating_id as "ratingId",
+          sr.song_id as "songId",
+          sr.user_id as "userId",
+          sr.rating,
+          sr.review_comment as "reviewComment",
+          sr.created_at as "createdAt",
+          sr.updated_at as "updatedAt",
+          u.username,
+          u.first_name as "firstName",
+          u.last_name as "lastName"
+        FROM song_ratings sr
+        LEFT JOIN users u ON sr.user_id = u.user_id
+        WHERE sr.song_id = $1
+        ORDER BY sr.created_at DESC
+        LIMIT $2 OFFSET $3
+      `;
+      
+      const result = await pool.query(query, [songId, limit, offset]);
+      
+      // Contar total de ratings
+      const countQuery = `
+        SELECT COUNT(*) as total FROM song_ratings WHERE song_id = $1
+      `;
+      const countResult = await pool.query(countQuery, [songId]);
+      const total = parseInt(countResult.rows[0].total);
+      const totalPages = Math.ceil(total / limit);
+      
+      return {
+        ratings: result.rows,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      };
+    } catch (error) {
+      console.error('Error al obtener ratings de la canción:', error);
+      throw createError('Error al obtener ratings de la canción', 500);
+    }
+  },
+
+  // Actualizar estadísticas de rating de una canción
+  async updateSongRatingStats(songId: string): Promise<void> {
+    try {
+      const query = `
+        UPDATE songs
+        SET
+          average_rating = (
+            SELECT COALESCE(AVG(rating), 0)
+            FROM song_ratings
+            WHERE song_id = $1
+          ),
+          rating_count = (
+            SELECT COUNT(*)
+            FROM song_ratings
+            WHERE song_id = $1
+          )
+        WHERE song_id = $1
+      `;
+      
+      await pool.query(query, [songId]);
+    } catch (error) {
+      console.error('Error al actualizar estadísticas de rating:', error);
+      // No lanzar error para no interrumpir el proceso principal
+    }
+  },
+
+  // Dar like a una canción
+  async likeSong(songId: string, userId: number): Promise<any> {
+    try {
+      // Verificar si ya existe el like
+      const existingLike = await pool.query(`
+        SELECT like_id FROM song_likes
+        WHERE song_id = $1 AND user_id = $2
+      `, [songId, userId]);
+
+      if (existingLike.rows.length > 0) {
+        throw createError('Ya has dado me gusta a esta canción', 400);
+      }
+
+      // Crear el like
+      const insertQuery = `
+        INSERT INTO song_likes (song_id, user_id)
+        VALUES ($1, $2)
+        RETURNING like_id as "likeId", song_id as "songId",
+                  user_id as "userId", created_at as "createdAt"
+      `;
+      
+      const result = await pool.query(insertQuery, [songId, userId]);
+
+      // Actualizar contador de likes en la canción
+      await pool.query(`
+        UPDATE songs
+        SET like_count = (
+          SELECT COUNT(*) FROM song_likes WHERE song_id = $1
+        )
+        WHERE song_id = $1
+      `, [songId]);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error al dar like a canción:', error);
+      if ((error as any).statusCode) {
+        throw error;
+      }
+      throw createError('Error al dar me gusta', 500);
+    }
+  },
+
+  // Quitar like de una canción
+  async unlikeSong(songId: string, userId: number): Promise<void> {
+    try {
+      const result = await pool.query(`
+        DELETE FROM song_likes
+        WHERE song_id = $1 AND user_id = $2
+        RETURNING like_id
+      `, [songId, userId]);
+
+      if (result.rows.length === 0) {
+        throw createError('No has dado me gusta a esta canción', 400);
+      }
+
+      // Actualizar contador de likes en la canción
+      await pool.query(`
+        UPDATE songs
+        SET like_count = (
+          SELECT COUNT(*) FROM song_likes WHERE song_id = $1
+        )
+        WHERE song_id = $1
+      `, [songId]);
+    } catch (error) {
+      console.error('Error al quitar like de canción:', error);
+      if ((error as any).statusCode) {
+        throw error;
+      }
+      throw createError('Error al quitar me gusta', 500);
+    }
+  },
+
+  // Verificar si el usuario dio like a una canción
+  async checkIfLiked(songId: string, userId: number): Promise<boolean> {
+    try {
+      const result = await pool.query(`
+        SELECT like_id FROM song_likes
+        WHERE song_id = $1 AND user_id = $2
+      `, [songId, userId]);
+
+      return result.rows.length > 0;
+    } catch (error) {
+      console.error('Error al verificar like:', error);
+      return false;
+    }
   }
 };

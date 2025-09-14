@@ -62,6 +62,7 @@ import { songService } from '../services/songService';
 import { statsService } from '../services/statsService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FavoriteButton } from '../components/FavoriteButton';
+import SongRating from '../components/song/SongRating';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -805,13 +806,18 @@ const SongDetailPage: React.FC = () => {
           <Paper sx={{
             p: 2,
             textAlign: 'center',
+            cursor: 'pointer',
             transition: 'all 0.3s ease',
             '&:hover': {
               transform: 'translateY(-2px)',
-              boxShadow: 2
+              boxShadow: 2,
+              backgroundColor: 'success.light',
+              color: 'success.contrastText'
             }
-          }}>
-            <ThumbUpIcon color="success" />
+          }}
+          onClick={() => setActiveTab(2)} // Cambiar a la pestaña de comentarios/rating
+          >
+            <ThumbUpIcon color="inherit" />
             <Typography variant="h6">{song.ratingCount || 0}</Typography>
             <Typography variant="body2">Valoraciones</Typography>
           </Paper>
@@ -1159,92 +1165,14 @@ const SongDetailPage: React.FC = () => {
 
         {/* Tab 3: Comentarios */}
         <TabPanel value={activeTab} index={2}>
-          <Typography variant="h6" gutterBottom>
-            Valoración y comentarios
-          </Typography>
-          
-          {user && (
-            <Box sx={{ mb: 3, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                Tu valoración:
-              </Typography>
-              <Rating
-                value={userRating?.rating || 0}
-                onChange={handleRating}
-                size="large"
-              />
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                placeholder="Escribe un comentario sobre esta canción..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                sx={{ mt: 2 }}
-                disabled={submittingComment}
-              />
-              <Button
-                variant="contained"
-                sx={{ mt: 1 }}
-                onClick={handleSubmitComment}
-                disabled={submittingComment || !comment.trim()}
-              >
-                {submittingComment ? <CircularProgress size={20} /> : 'Enviar comentario'}
-              </Button>
-            </Box>
-          )}
-
-          {/* Lista de comentarios */}
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              💬 Comentarios ({comments.length})
-            </Typography>
-
-            {comments.length > 0 ? (
-              <List>
-                {comments.map((comment, index) => (
-                  <ListItem key={index} alignItems="flex-start">
-                    <ListItemAvatar>
-                      <Avatar>
-                        <PersonIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="subtitle2">
-                            {comment.userName || 'Usuario'}
-                          </Typography>
-                          {comment.rating && (
-                            <Rating value={comment.rating} size="small" readOnly />
-                          )}
-                        </Box>
-                      }
-                      secondary={
-                        <Box>
-                          <Typography variant="body2" sx={{ mt: 1 }}>
-                            {comment.text}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {comment.date || 'Hace un momento'}
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Paper sx={{ p: 3, textAlign: 'center', backgroundColor: 'grey.50' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Aún no hay comentarios para esta canción.
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  ¡Sé el primero en comentar!
-                </Typography>
-              </Paper>
-            )}
-          </Box>
+          {/* Componente de Rating integrado */}
+          <SongRating
+            songId={songId!}
+            averageRating={song.averageRating}
+            ratingCount={song.ratingCount}
+            showRatingsList={true}
+            compact={false}
+          />
         </TabPanel>
       </Card>
 

@@ -361,8 +361,8 @@ export const songService = {
   // Dar me gusta a una canción
   async likeSong(songId: string): Promise<SongLike> {
     try {
-      const response = await apiClient.post<SongLike>(`/songs/${songId}/like`);
-      return response.data;
+      const response = await apiClient.post<{ success: boolean; data: SongLike }>(`/songs/${songId}/like`);
+      return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Error al dar me gusta');
     }
@@ -380,8 +380,8 @@ export const songService = {
   // Calificar canción
   async rateSong(songId: string, ratingData: CreateSongRating): Promise<SongRating> {
     try {
-      const response = await apiClient.post<SongRating>(`/songs/${songId}/rate`, ratingData);
-      return response.data;
+      const response = await apiClient.post<{ success: boolean; data: SongRating }>(`/songs/${songId}/rate`, ratingData);
+      return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Error al calificar canción');
     }
@@ -390,8 +390,8 @@ export const songService = {
   // Obtener calificación del usuario para una canción
   async getUserRating(songId: string): Promise<SongRating | null> {
     try {
-      const response = await apiClient.get<SongRating>(`/songs/${songId}/my-rating`);
-      return response.data;
+      const response = await apiClient.get<{ success: boolean; data: SongRating }>(`/songs/${songId}/my-rating`);
+      return response.data.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
         return null;
@@ -403,9 +403,10 @@ export const songService = {
   // Verificar si el usuario dio me gusta a una canción
   async checkIfLiked(songId: string): Promise<boolean> {
     try {
-      const response = await apiClient.get<{ liked: boolean }>(`/songs/${songId}/is-liked`);
-      return response.data.liked;
+      const response = await apiClient.get<{ success: boolean; data: { liked: boolean } }>(`/songs/${songId}/is-liked`);
+      return response.data.data?.liked || false;
     } catch (error: any) {
+      console.error('Error al verificar like:', error);
       return false;
     }
   },
