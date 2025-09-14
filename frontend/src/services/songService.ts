@@ -400,6 +400,27 @@ export const songService = {
     }
   },
 
+  // Eliminar calificación/comentario de una canción
+  async deleteRating(songId: string, ratingId: string): Promise<void> {
+    try {
+      await apiClient.delete(`/songs/${songId}/ratings/${ratingId}`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al eliminar calificación');
+    }
+  },
+
+  // Obtener todas las calificaciones de una canción
+  async getSongRatings(songId: string, page: number = 1, limit: number = 10): Promise<any> {
+    try {
+      const response = await apiClient.get(`/songs/${songId}/ratings`, {
+        params: { page, limit }
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al obtener calificaciones');
+    }
+  },
+
   // Verificar si el usuario dio me gusta a una canción
   async checkIfLiked(songId: string): Promise<boolean> {
     try {

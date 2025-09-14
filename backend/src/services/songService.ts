@@ -843,5 +843,53 @@ export const songService = {
       console.error('Error al verificar like:', error);
       return false;
     }
+  },
+
+  // Eliminar rating/comentario de una canción
+  async deleteRating(songId: string, ratingId: string, userId: number, userRole?: string): Promise<void> {
+    try {
+      // Primero verificar que el rating existe y obtener información del autor
+      const ratingQuery = `
+        SELECT user_id, rating, review_comment
+        FROM song_ratings
+        WHERE rating_id = $1 AND song_id = $2
+      `;
+      
+      const ratingResult = await pool.query(ratingQuery, [ratingId, songId]);
+      
+      if (ratingResult.rows.length === 0) {
+        throw createError('Valoración no encontrada', 404);
+      }
+      
+      const rating = ratingResult.rows[0];
+      
+      // Verificar permisos: solo el autor del comentario o administrador puede eliminar
+      if (rating.user_id !== userId && userRole !== 'admin') {
+        throw createError('No tienes permisos para eliminar esta valoración', 403);
+      }
+      
+      // Eliminar el rating
+      const deleteQuery = `
+        DELETE FROM song_ratings
+        WHERE rating_id = $1 AND song_id = $2
+        RETURNING rating_id
+      `;
+      
+      const result = await pool.query(deleteQuery, [ratingId, songId]);
+      
+      if (result.rows.length === 0) {
+        throw createError('Error al eliminar la valoración', 500);
+      }
+      
+      // Actualizar estadísticas de rating de la canción
+      await this.updateSongRatingStats(songId);
+      
+    } catch (error) {
+      console.error('Error al eliminar rating:', error);
+      if ((error as any).statusCode) {
+        throw error;
+      }
+      throw createError('Error al eliminar valoración', 500);
+    }
   }
 };

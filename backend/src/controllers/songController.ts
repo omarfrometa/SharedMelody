@@ -352,6 +352,28 @@ export const checkIfLiked = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+// Eliminar rating/comentario de una canción
+export const deleteRating = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, ratingId } = req.params;
+    
+    // TODO: Obtener userId y userRole del token de autenticación
+    // const userId = req.user?.userId;
+    // const userRole = req.user?.role;
+    const userId = 1; // Por ahora usamos un ID fijo para testing
+    const userRole = 'admin'; // Por ahora usamos rol admin para testing
+
+    await songService.deleteRating(id, ratingId, userId, userRole);
+
+    res.json({
+      success: true,
+      message: 'Valoración eliminada exitosamente'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Eliminar canción (solo admins)
 export const deleteSong = async (req: Request, res: Response, next: NextFunction) => {
   try {

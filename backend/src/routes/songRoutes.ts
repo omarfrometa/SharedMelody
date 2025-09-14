@@ -11,6 +11,7 @@ import {
   rateSong,
   getUserRating,
   getSongRatings,
+  deleteRating,
   likeSong,
   unlikeSong,
   checkIfLiked
@@ -78,6 +79,9 @@ router.delete('/:id/like', unlikeSong);
 
 // GET /api/songs/:id/is-liked - Verificar si está en me gusta (requiere autenticación)
 router.get('/:id/is-liked', checkIfLiked);
+
+// DELETE /api/songs/:id/ratings/:ratingId - Eliminar rating/comentario (requiere autenticación)
+router.delete('/:id/ratings/:ratingId', deleteRating);
 
 // TODO: Implementar rutas de moderación
 // GET /api/songs/pending - Obtener canciones pendientes (solo admins)

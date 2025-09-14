@@ -4,21 +4,28 @@ import {
   Typography, 
   Rating as MuiRating, 
   TextField, 
-  Button, 
+  Button,
   Paper,
   Stack,
   Alert,
   CircularProgress,
   Divider,
   Avatar,
-  Chip
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
-import { 
-  Star as StarIcon, 
+import {
+  Star as StarIcon,
   StarBorder as StarBorderIcon,
   Send as SendIcon,
   Favorite as FavoriteIcon,
-  FavoriteBorder as FavoriteBorderIcon 
+  FavoriteBorder as FavoriteBorderIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { songService } from '../../services/songService';
 import { SongRating as SongRatingType, CreateSongRating } from '../../types/song';
@@ -59,10 +66,14 @@ const SongRating: React.FC<SongRatingProps> = ({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [loadingRatings, setLoadingRatings] = useState<boolean>(false);
   const [loadingLike, setLoadingLike] = useState<boolean>(false);
+  const [deletingRating, setDeletingRating] = useState<boolean>(false);
   
   // Estados de error
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+  
+  // Estados de diálogo
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -106,11 +117,11 @@ const SongRating: React.FC<SongRatingProps> = ({
   const loadRatings = async () => {
     try {
       setLoadingRatings(true);
-      // Nota: El servicio actual no tiene este método, se puede implementar más tarde
-      // const ratingsData = await songService.getSongRatings(songId.toString());
-      // setRatings(ratingsData.data || []);
+      const ratingsData = await songService.getSongRatings(songId.toString());
+      setRatings(ratingsData.data || []);
     } catch (error: any) {
       console.error('Error al cargar ratings:', error);
+      setRatings([]);
     } finally {
       setLoadingRatings(false);
     }
@@ -150,6 +161,34 @@ const SongRating: React.FC<SongRatingProps> = ({
       setError(error.message || 'Error al enviar calificación');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Eliminar valoración del usuario
+  const handleDeleteRating = async () => {
+    if (!userRating) return;
+
+    try {
+      setDeletingRating(true);
+      setError('');
+      
+      await songService.deleteRating(songId.toString(), userRating.ratingId.toString());
+      
+      // Limpiar estado del usuario
+      setUserRating(null);
+      setCurrentRating(0);
+      setReviewComment('');
+      setSuccess('Valoración eliminada exitosamente');
+      
+      // Recargar ratings si se muestran
+      if (showRatingsList) {
+        loadRatings();
+      }
+    } catch (error: any) {
+      setError(error.message || 'Error al eliminar valoración');
+    } finally {
+      setDeletingRating(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -343,6 +382,21 @@ const SongRating: React.FC<SongRatingProps> = ({
                   >
                     {submitting ? 'Enviando...' : (userRating ? 'Actualizar' : 'Enviar calificación')}
                   </Button>
+
+                  {/* Botón para eliminar valoración existente */}
+                  {userRating && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={deletingRating ? <CircularProgress size={16} /> : <DeleteIcon />}
+                      onClick={() => setDeleteDialogOpen(true)}
+                      disabled={deletingRating}
+                      size="small"
+                      sx={{ alignSelf: 'flex-start', mt: 1 }}
+                    >
+                      {deletingRating ? 'Eliminando...' : 'Eliminar mi valoración'}
+                    </Button>
+                  )}
                 </Stack>
               </Box>
             </>
@@ -371,19 +425,29 @@ const SongRating: React.FC<SongRatingProps> = ({
           ) : ratings.length > 0 ? (
             <Stack spacing={2}>
               {ratings.map((rating) => (
-                <Paper key={rating.ratingId} elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
-                  <Stack spacing={1}>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Avatar sx={{ width: 32, height: 32 }}>
-                        {rating.username?.[0]?.toUpperCase() || '?'}
+                <Paper key={rating.ratingId} elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider' }}>
+                  <Stack spacing={2}>
+                    {/* Header con usuario, fecha y rating */}
+                    <Box display="flex" alignItems="flex-start" gap={2}>
+                      <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}>
+                        {rating.username?.[0]?.toUpperCase() || rating.firstName?.[0]?.toUpperCase() || '?'}
                       </Avatar>
                       <Box flex={1}>
-                        <Typography variant="subtitle2">
-                          {rating.firstName && rating.lastName 
-                            ? `${rating.firstName} ${rating.lastName}` 
-                            : rating.username || 'Usuario anónimo'}
-                        </Typography>
-                        <Box display="flex" alignItems="center" gap={1}>
+                        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+                          <Typography variant="subtitle1" fontWeight="medium">
+                            {rating.firstName && rating.lastName
+                              ? `${rating.firstName} ${rating.lastName}`
+                              : rating.username || 'Usuario anónimo'}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {new Date(rating.createdAt).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
                           <MuiRating
                             value={rating.rating}
                             readOnly
@@ -391,17 +455,24 @@ const SongRating: React.FC<SongRatingProps> = ({
                             icon={<StarIcon fontSize="inherit" />}
                             emptyIcon={<StarBorderIcon fontSize="inherit" />}
                           />
-                          <Typography variant="caption" color="text.secondary">
-                            {new Date(rating.createdAt).toLocaleDateString()}
+                          <Typography variant="body2" color="text.secondary">
+                            ({rating.rating}/5)
                           </Typography>
                         </Box>
                       </Box>
                     </Box>
                     
+                    {/* Comentario del usuario */}
                     {rating.reviewComment && (
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        {rating.reviewComment}
-                      </Typography>
+                      <Box sx={{ pl: 7 }}>
+                        <Typography variant="body1" sx={{
+                          lineHeight: 1.6,
+                          color: 'text.primary',
+                          fontStyle: rating.reviewComment.length < 50 ? 'italic' : 'normal'
+                        }}>
+                          "{rating.reviewComment}"
+                        </Typography>
+                      </Box>
                     )}
                   </Stack>
                 </Paper>
@@ -414,6 +485,32 @@ const SongRating: React.FC<SongRatingProps> = ({
           )}
         </Box>
       )}
+
+      {/* Diálogo de confirmación para eliminar valoración */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro de que quieres eliminar tu valoración? Esta acción no se puede deshacer.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleDeleteRating}
+            color="error"
+            disabled={deletingRating}
+            startIcon={deletingRating ? <CircularProgress size={16} /> : <DeleteIcon />}
+          >
+            {deletingRating ? 'Eliminando...' : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
