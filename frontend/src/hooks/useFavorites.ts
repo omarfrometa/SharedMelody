@@ -99,7 +99,7 @@ export const useFavorites = () => {
 
     try {
       console.log('🔍 Checking if song', songId, 'is favorite');
-      const response = await fetch(`/api/songs/${songId}/is-liked`, {
+      const response = await fetch(`/api/favorites/songs/${songId}/check`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -135,9 +135,9 @@ export const useFavorites = () => {
     setError(null);
 
     try {
-      console.log('📡 Making request to:', `/api/songs/${songId}/like`);
+      console.log('📡 Making request to:', `/api/favorites/songs/${songId}/toggle`);
 
-      const response = await fetch(`/api/songs/${songId}/like`, {
+      const response = await fetch(`/api/favorites/songs/${songId}/toggle`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

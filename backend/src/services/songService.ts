@@ -254,7 +254,19 @@ export const songService = {
           s.status,
           s.upload_date as "uploadDate",
           s.plays_count as "playsCount",
-          s.like_count as "likeCount"
+          COALESCE(s.like_count, 0) as "likeCount",
+          COALESCE(
+            (SELECT COUNT(*) FROM user_favorites WHERE song_id = s.song_id),
+            0
+          ) as "favoriteCount",
+          COALESCE(
+            (SELECT AVG(rating) FROM song_ratings WHERE song_id = s.song_id),
+            0
+          ) as "averageRating",
+          COALESCE(
+            (SELECT COUNT(*) FROM song_ratings WHERE song_id = s.song_id),
+            0
+          ) as "ratingCount"
         FROM songs s
         LEFT JOIN artists ar ON s.artist_id = ar.artist_id
         LEFT JOIN authors a ON s.author_id = a.author_id

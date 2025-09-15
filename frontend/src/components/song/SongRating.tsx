@@ -38,6 +38,7 @@ interface SongRatingProps {
   showRatingsList?: boolean;
   compact?: boolean;
   onRatingStatsChange?: (averageRating: number, ratingCount: number) => void;
+  onLikeCountChange?: (likeCount: number) => void;
 }
 
 interface RatingWithUser extends SongRatingType {
@@ -52,7 +53,8 @@ const SongRating: React.FC<SongRatingProps> = ({
   ratingCount: initialRatingCount = 0,
   showRatingsList = true,
   compact = false,
-  onRatingStatsChange
+  onRatingStatsChange,
+  onLikeCountChange
 }) => {
   const { user, isAuthenticated } = useAuth();
   
@@ -87,7 +89,8 @@ const SongRating: React.FC<SongRatingProps> = ({
       loadUserRating();
       checkIfLiked();
     }
-    if (showRatingsList && songId) {
+    // SIEMPRE cargar ratings para calcular estadísticas, independientemente de showRatingsList
+    if (songId) {
       loadRatings();
     }
   }, [songId, isAuthenticated, showRatingsList]);
@@ -244,6 +247,10 @@ const SongRating: React.FC<SongRatingProps> = ({
         try {
           await songService.likeSong(songId.toString());
           setSuccess('Me gusta agregado');
+          // Notificar cambio de conteo al componente padre
+          if (onLikeCountChange) {
+            onLikeCountChange(1); // Incrementar
+          }
         } catch (likeError: any) {
           // Si ya existe, mantener el estado positivo
           if (likeError.message?.includes('Ya has dado me gusta')) {
@@ -258,6 +265,10 @@ const SongRating: React.FC<SongRatingProps> = ({
         // Quitar like
         await songService.unlikeSong(songId.toString());
         setSuccess('Me gusta removido');
+        // Notificar cambio de conteo al componente padre
+        if (onLikeCountChange) {
+          onLikeCountChange(-1); // Decrementar
+        }
       }
     } catch (error: any) {
       console.error('Error en toggle like:', error);

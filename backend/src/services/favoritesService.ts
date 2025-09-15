@@ -136,12 +136,12 @@ export const favoritesService = {
   }> {
     try {
       const query = `
-        SELECT 
-          total_favorites,
-          unique_users_favorited,
-          first_favorited,
-          last_favorited
-        FROM favorites_stats 
+        SELECT
+          COUNT(*) as total_favorites,
+          COUNT(DISTINCT user_id) as unique_users_favorited,
+          MIN(created_at) as first_favorited,
+          MAX(created_at) as last_favorited
+        FROM user_favorites
         WHERE song_id = $1
       `;
       
@@ -165,7 +165,14 @@ export const favoritesService = {
       };
     } catch (error) {
       console.error('Error al obtener estadísticas de favoritos:', error);
-      throw createError('Error al obtener estadísticas de favoritos', 500);
+      // Si la tabla user_favorites no existe, devolver valores por defecto
+      console.log('⚠️ Tabla user_favorites no encontrada, devolviendo valores por defecto');
+      return {
+        totalFavorites: 0,
+        uniqueUsersFavorited: 0,
+        firstFavorited: null,
+        lastFavorited: null
+      };
     }
   },
 

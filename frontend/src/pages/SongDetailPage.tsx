@@ -54,7 +54,10 @@ import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
   BugReport as CorrectIcon,
   Print as PrintIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  IceSkating,
+  StartRounded,
+  Stars
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { SongDetailed } from '../types/song';
@@ -110,6 +113,10 @@ const SongDetailPage: React.FC = () => {
   // Estados para las estadísticas de rating actualizadas
   const [currentAverageRating, setCurrentAverageRating] = useState(0);
   const [currentRatingCount, setCurrentRatingCount] = useState(0);
+  
+  // Estados para conteos separados de Me gusta y Favoritos
+  const [currentLikeCount, setCurrentLikeCount] = useState(0);
+  const [currentFavoriteCount, setCurrentFavoriteCount] = useState(0);
 
   // Estados para el menú flotante
   const [fontSize, setFontSize] = useState(16);
@@ -149,10 +156,23 @@ const SongDetailPage: React.FC = () => {
     if (songId) {
       loadSong();
       loadMockComments();
+      loadInitialCounts(); // Cargar conteos iniciales
     }
     loadChords();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [songId]); // loadSong se define dentro del componente, no necesita estar en dependencias
+
+  // Función para cargar conteos iniciales desde el backend
+  const loadInitialCounts = async () => {
+    if (!songId) return;
+
+    console.log('🔄 Cargando conteos iniciales para canción:', songId);
+    console.log('ℹ️ Los conteos ahora se cargan directamente desde loadSong() - favoritos, likes, y valoraciones incluidos');
+    
+    // Ya no necesitamos cargar datos separados porque todos los conteos
+    // (likes, favoritos, valoraciones) vienen incluidos en loadSong()
+    console.log('✅ Carga de conteos iniciales completada - usando datos de loadSong()');
+  };
 
   // Cargar comentarios simulados (temporal)
   const loadMockComments = () => {
@@ -457,9 +477,9 @@ const SongDetailPage: React.FC = () => {
         status: songData.isApproved ? 'approved' : 'pending',
         viewCount: parseInt(songData.playsCount) || 0,
         downloadCount: 0, // No disponible en el backend actual
-        likeCount: 0, // No disponible en el backend actual
-        averageRating: 0, // No disponible en el backend actual
-        ratingCount: 0, // No disponible en el backend actual
+        likeCount: parseInt(songData.likeCount) || 0,
+        averageRating: parseFloat(songData.averageRating) || 0,
+        ratingCount: parseInt(songData.ratingCount) || 0,
         comments: '', // No disponible en el backend actual
         tags: [songData.genreName].filter(Boolean), // Usar el género como tag
         createdAt: songData.uploadDate || new Date().toISOString(),
@@ -467,6 +487,19 @@ const SongDetailPage: React.FC = () => {
       };
 
       setSong(detailedSong);
+      
+      // Actualizar estados con los conteos reales de la canción
+      setCurrentLikeCount(parseInt(songData.likeCount) || 0);
+      setCurrentFavoriteCount(parseInt(songData.favoriteCount) || 0);
+      setCurrentAverageRating(parseFloat(songData.averageRating) || 0);
+      setCurrentRatingCount(parseInt(songData.ratingCount) || 0);
+      
+      console.log('📊 Conteos iniciales actualizados:', {
+        likeCount: parseInt(songData.likeCount) || 0,
+        favoriteCount: parseInt(songData.favoriteCount) || 0,
+        averageRating: parseFloat(songData.averageRating) || 0,
+        ratingCount: parseInt(songData.ratingCount) || 0
+      });
     } catch (err: any) {
       setError(err.message || 'Error al cargar la canción');
     } finally {
@@ -595,6 +628,14 @@ const SongDetailPage: React.FC = () => {
     setCurrentRatingCount(ratingCount);
   };
 
+  // Callback para recibir actualizaciones de conteo de "Me gusta"
+  const handleLikeCountChange = (increment: number) => {
+    setCurrentLikeCount(prev => {
+      const currentCount = prev || (song ? song.likeCount : 0) || 0;
+      return Math.max(0, currentCount + increment);
+    });
+  };
+
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -701,8 +742,8 @@ const SongDetailPage: React.FC = () => {
                   size="medium"
                   onFavoriteChange={(isFavorite, songId) => {
                     console.log(`Canción ${songId} ${isFavorite ? 'agregada a' : 'removida de'} favoritos`);
-                    // Recargar datos de la canción para actualizar contadores
-                    loadSong();
+                    // Actualizar contador de favoritos
+                    setCurrentFavoriteCount(prev => isFavorite ? prev + 1 : Math.max(0, prev - 1));
                   }}
                 />
 
@@ -807,8 +848,23 @@ const SongDetailPage: React.FC = () => {
               boxShadow: 2
             }
           }}>
+            <ThumbUpIcon color="info" />
+            <Typography variant="h6">{currentLikeCount || song.likeCount || 0}</Typography>
+            <Typography variant="body2">Me gusta</Typography>
+          </Paper>
+        </Box>
+        <Box sx={{ minWidth: 150, flex: '1 1 150px' }}>
+          <Paper sx={{
+            p: 2,
+            textAlign: 'center',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: 2
+            }
+          }}>
             <FavoriteIcon color="error" />
-            <Typography variant="h6">{song.likeCount || 0}</Typography>
+            <Typography variant="h6">{currentFavoriteCount || 0}</Typography>
             <Typography variant="body2">Favoritos</Typography>
           </Paper>
         </Box>
@@ -827,7 +883,7 @@ const SongDetailPage: React.FC = () => {
           }}
           onClick={() => setActiveTab(2)} // Cambiar a la pestaña de comentarios/rating
           >
-            <ThumbUpIcon color="inherit" />
+            <Stars color="inherit" />
             <Typography variant="h6">{currentRatingCount || song.ratingCount || 0}</Typography>
             <Typography variant="body2">Valoraciones</Typography>
           </Paper>
@@ -1183,6 +1239,7 @@ const SongDetailPage: React.FC = () => {
             showRatingsList={true}
             compact={false}
             onRatingStatsChange={handleRatingStatsChange}
+            onLikeCountChange={handleLikeCountChange}
           />
         </TabPanel>
       </Card>

@@ -30,11 +30,11 @@ router.get('/songs/:songId/check', isSongFavorite);
 // GET /api/favorites/my-favorites - Obtener favoritos del usuario autenticado
 router.get('/my-favorites', getUserFavorites);
 
-// GET /api/favorites/songs/:songId/stats - Obtener estadísticas de favoritos de una canción
-router.get('/songs/:songId/stats', getSongFavoriteStats);
-
 // Rutas públicas (no requieren autenticación)
 const publicRouter = Router();
+
+// GET /api/favorites/songs/:songId/stats - Obtener estadísticas de favoritos de una canción
+publicRouter.get('/songs/:songId/stats', getSongFavoriteStats);
 
 // GET /api/favorites/most-favorited - Obtener canciones más favoritas
 publicRouter.get('/most-favorited', getMostFavoritedSongs);

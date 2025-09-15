@@ -16,8 +16,8 @@ export const setupRoutes = (app: Express) => {
   app.use('/api/genres', genreRoutes);
   app.use('/api/authors', authorRoutes);
   app.use('/api/stats', statsRoutes);
-  app.use('/api/favorites', favoritesRoutes);
   app.use('/api/favorites', publicFavoritesRoutes);
+  app.use('/api/favorites', favoritesRoutes);
   app.use('/api/admin', adminRoutes);
 
   // Ruta raíz de la API
