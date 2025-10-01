@@ -13,6 +13,15 @@ router.post('/register', authController.register);
 router.post('/logout', authController.logout);
 router.get('/me', authController.getMe);
 
+// Email verification routes
+router.post('/verify-email', authController.verifyEmail);
+router.post('/resend-verification', authController.resendVerificationEmail);
+
+// Admin email management routes
+router.get('/email/queue-stats', authController.getEmailQueueStats);
+router.post('/email/process-queue', authController.processEmailQueueManually);
+router.get('/email/test-connection', authController.testEmailConnection);
+
 // Session management routes
 router.get('/sessions', authController.getSessions);
 router.delete('/sessions/:sessionId', authController.revokeSession);
@@ -20,6 +29,9 @@ router.delete('/sessions', authController.revokeAllSessions);
 
 // OAuth provider management routes
 router.get('/oauth/providers', authController.getOAuthProviders);
+
+// Debug route to check table structure
+router.get('/debug/table-structure', authController.checkTableStructure);
 
 // Rutas de autenticación con Google
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

@@ -212,7 +212,7 @@ const LoginPage: React.FC = () => {
             <Box textAlign="center" sx={{ mt: 2 }}>
               <Typography variant="body2">
                 {t('auth.dontHaveAccount')}{' '}
-                <Link component={RouterLink} to="/auth/register">
+                <Link component={RouterLink} to="/register">
                   {t('auth.register')}
                 </Link>
               </Typography>

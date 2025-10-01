@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/database';
+import { emailService } from '../services/emailService';
+import { backgroundEmailProcessor } from '../services/backgroundEmailProcessor';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shared-melody-secret-key-2024';
 
@@ -46,6 +48,9 @@ export const login = async (req: Request, res: Response) => {
           message: 'Cuenta desactivada'
         });
       }
+
+      // TODO: Add email verification logic when the email_verified column is added to the database
+      // For now, we'll skip this check
 
       if (!user.password_hash) {
         console.log('[AUTH DEBUG] Error: El usuario no tiene un hash de contraseña (probablemente es una cuenta de OAuth).');
@@ -151,12 +156,6 @@ export const register = async (req: Request, res: Response) => {
       }
 
       const hashedPassword = await bcrypt.hash(password, 12);
-      
-      const defaultRoleResult = await client.query("SELECT role_id FROM user_roles WHERE role_name = 'user'");
-      if (defaultRoleResult.rows.length === 0) {
-          throw new Error("Default 'user' role not found in user_roles table.");
-      }
-      const defaultRoleId = defaultRoleResult.rows[0].role_id;
 
       const createUserQuery = `
         INSERT INTO users (
@@ -165,12 +164,11 @@ export const register = async (req: Request, res: Response) => {
           username,
           email,
           password_hash,
-          role_id,
+          role,
           is_active,
-          created_at,
-          updated_at
+          registration_date
         )
-        VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, true, NOW())
         RETURNING user_id, username, email, first_name, last_name
       `;
 
@@ -180,25 +178,25 @@ export const register = async (req: Request, res: Response) => {
         username,
         email,
         hashedPassword,
-        defaultRoleId
+        'user' // Default role as string
       ]);
 
       const newUser = result.rows[0];
 
-      const token = jwt.sign(
-        {
-          userId: newUser.user_id,
-          username: newUser.username,
-          email: newUser.email,
-          role: 'user'
-        },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-      );
+      // Crear token de verificación y enviar email
+      try {
+        const verificationToken = await emailService.createVerificationToken(newUser.user_id, newUser.email);
+        await emailService.sendVerificationEmail(newUser.email, newUser.first_name, verificationToken);
+        
+        console.log('📧 Email de verificación enviado a:', newUser.email);
+      } catch (emailError) {
+        console.error('❌ Error al enviar email de verificación:', emailError);
+        // No fallar el registro por error de email, solo loggearlo
+      }
 
       return res.status(201).json({
         success: true,
-        message: 'Usuario creado exitosamente',
+        message: 'Usuario creado exitosamente. Se ha enviado un email de verificación a tu correo.',
         user: {
           userId: newUser.user_id,
           username: newUser.username,
@@ -206,11 +204,12 @@ export const register = async (req: Request, res: Response) => {
           firstName: newUser.first_name,
           lastName: newUser.last_name,
           isActive: true,
+          emailVerified: true, // TODO: Set to false when email verification is implemented
           role: {
             roleName: 'user'
           }
         },
-        accessToken: token
+        requiresEmailVerification: true
       });
 
     } finally {
@@ -439,4 +438,269 @@ export const revokeAllSessions = async (req: Request, res: Response): Promise<vo
             message: 'Error al revocar todas las sesiones'
         });
     }
+};
+
+// Email verification endpoints
+export const verifyEmail = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+    const ipAddress = req.ip;
+    const userAgent = req.headers['user-agent'];
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token de verificación es requerido'
+      });
+    }
+
+    const result = await emailService.verifyEmailToken(token, ipAddress, userAgent);
+
+    if (result.success) {
+      return res.json({
+        success: true,
+        message: result.message,
+        user: {
+          userId: result.userId,
+          email: result.email,
+          emailVerified: true
+        }
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
+
+  } catch (error) {
+    console.error('Error en verificación de email:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+export const resendVerificationEmail = async (req: Request, res: Response) => {
+  try {
+    const { userId, email } = req.body;
+
+    if (!userId && !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Se requiere userId o email'
+      });
+    }
+
+    let targetUserId = userId;
+
+    // Si solo se proporciona email, buscar el userId
+    if (!targetUserId && email) {
+      const client = await pool.connect();
+      try {
+        const userQuery = 'SELECT user_id, email_verified FROM users WHERE email = $1';
+        const userResult = await client.query(userQuery, [email]);
+        
+        if (userResult.rows.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: 'Usuario no encontrado'
+          });
+        }
+
+        const user = userResult.rows[0];
+        if (user.email_verified) {
+          return res.status(400).json({
+            success: false,
+            message: 'El email ya está verificado'
+          });
+        }
+
+        targetUserId = user.user_id;
+      } finally {
+        client.release();
+      }
+    }
+
+    await emailService.resendVerificationEmail(targetUserId);
+
+    return res.json({
+      success: true,
+      message: 'Email de verificación reenviado exitosamente'
+    });
+
+  } catch (error) {
+    console.error('Error al reenviar email de verificación:', error);
+    if ((error as any).statusCode) {
+      return res.status((error as any).statusCode).json({
+        success: false,
+        message: (error as any).message
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+export const getEmailQueueStats = async (req: Request, res: Response) => {
+  try {
+    // Verificar que el usuario sea admin
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token no proporcionado'
+      });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    
+    // Solo admins pueden ver estadísticas de cola
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado'
+      });
+    }
+
+    const stats = await emailService.getQueueStats();
+    const processorStatus = backgroundEmailProcessor.getStatus();
+    const healthCheck = await backgroundEmailProcessor.healthCheck();
+
+    return res.json({
+      success: true,
+      data: {
+        queueStats: stats,
+        processorStatus,
+        healthCheck
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al obtener estadísticas de cola:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+export const processEmailQueueManually = async (req: Request, res: Response) => {
+  try {
+    // Verificar que el usuario sea admin
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token no proporcionado'
+      });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    
+    // Solo admins pueden procesar la cola manualmente
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado'
+      });
+    }
+
+    await backgroundEmailProcessor.processNow();
+
+    return res.json({
+      success: true,
+      message: 'Procesamiento de cola iniciado'
+    });
+
+  } catch (error) {
+    console.error('Error al procesar cola manualmente:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+export const testEmailConnection = async (req: Request, res: Response) => {
+  try {
+    // Verificar que el usuario sea admin
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token no proporcionado'
+      });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    
+    // Solo admins pueden testear la conexión
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado'
+      });
+    }
+
+    const isConnected = await emailService.verifyConnection();
+    const config = emailService.getConfig();
+
+    return res.json({
+      success: true,
+      data: {
+        connected: isConnected,
+        config: {
+          smtp: {
+            host: config.smtp.host,
+            port: config.smtp.port,
+            secure: config.smtp.secure,
+            user: config.smtp.auth.user,
+            fromName: config.smtp.fromName,
+            fromEmail: config.smtp.fromEmail
+          },
+          queue: config.queue
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al testear conexión de email:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+// Debug endpoint to check table structure
+export const checkTableStructure = async (req: Request, res: Response) => {
+  try {
+    const client = await pool.connect();
+    try {
+      // Check the structure of users table
+      const result = await client.query(`
+        SELECT column_name, data_type, is_nullable
+        FROM information_schema.columns
+        WHERE table_name = 'users'
+        ORDER BY ordinal_position;
+      `);
+      
+      return res.json({
+        success: true,
+        columns: result.rows
+      });
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error checking table structure:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
 };

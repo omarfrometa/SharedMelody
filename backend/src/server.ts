@@ -11,6 +11,8 @@ import { setupRoutes } from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import { captureClientIP, logImportantRequest } from './middleware/ipCapture';
+import { backgroundEmailProcessor } from './services/backgroundEmailProcessor';
+import { emailService } from './services/emailService';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -114,12 +116,34 @@ const startServer = async () => {
       process.exit(1);
     }
 
+    // Inicializar servicios de email
+    try {
+      console.log('📧 Inicializando servicios de email...');
+      
+      // Verificar conexión SMTP
+      const smtpConnected = await emailService.verifyConnection();
+      if (smtpConnected) {
+        console.log('✅ Conexión SMTP verificada exitosamente');
+      } else {
+        console.log('⚠️ Conexión SMTP falló, pero el servidor continuará');
+      }
+      
+      // Iniciar procesador de cola de emails
+      backgroundEmailProcessor.start();
+      console.log('🔄 Procesador de cola de emails iniciado');
+      
+    } catch (emailError) {
+      console.error('⚠️ Error al inicializar servicios de email:', emailError);
+      console.log('🔄 El servidor continuará sin servicios de email');
+    }
+
     // Iniciar servidor
     app.listen(PORT, () => {
       console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
       console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 API disponible en: http://localhost:${PORT}`);
       console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+      console.log(`📧 Email queue processing: ${process.env.EMAIL_QUEUE_ENABLE_BACKGROUND_PROCESSING === 'true' ? 'ENABLED' : 'DISABLED'}`);
     });
 
   } catch (error) {
@@ -131,11 +155,13 @@ const startServer = async () => {
 // Manejo de señales de terminación
 process.on('SIGTERM', () => {
   console.log('🛑 SIGTERM recibido, cerrando servidor...');
+  backgroundEmailProcessor.stop();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('🛑 SIGINT recibido, cerrando servidor...');
+  backgroundEmailProcessor.stop();
   process.exit(0);
 });
 
