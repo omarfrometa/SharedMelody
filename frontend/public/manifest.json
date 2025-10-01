@@ -1,0 +1,19 @@
+{
+  "short_name": "SharedMelody",
+  "name": "SharedMelody - Collaborative Music Platform",
+  "description": "A collaborative platform for sharing and discovering music with lyrics and chords",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["music", "entertainment", "social"],
+  "lang": "es"
+}
